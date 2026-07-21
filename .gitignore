@@ -1,0 +1,11 @@
+# ─── BMAD & OpenSpec (AI agent tooling) ──────────────────────────────────────
+# BMAD core installation
+_bmad/
+_bmad-output/
+
+# BMAD skills (installed into .agent/skills)
+.agent/skills/bmad-*/
+.agent/skills/openspec-*/
+
+# OpenSpec workflows (installed into .agent/workflows)
+.agent/workflows/opsx-*.md
