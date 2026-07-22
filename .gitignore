@@ -9,3 +9,6 @@ _bmad-output/
 
 # OpenSpec workflows (installed into .agent/workflows)
 .agent/workflows/opsx-*.md
+
+venv/
+__pycache__/
