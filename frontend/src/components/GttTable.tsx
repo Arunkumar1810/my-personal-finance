@@ -11,6 +11,8 @@ export interface GttOrder {
   type?: string;
   closestTrigger?: "STOP_LOSS" | "TARGET" | null;
   eta?: number | null;
+  currentPrice?: number;
+  boughtPrice?: number;
 }
 
 interface GttTableProps {
@@ -35,6 +37,8 @@ export const GttTable: React.FC<GttTableProps> = ({ orders }) => {
             <th style={{ borderBottom: '1px solid #ccc', padding: '8px' }}>Symbol</th>
             <th style={{ borderBottom: '1px solid #ccc', padding: '8px' }}>Stop-Loss</th>
             <th style={{ borderBottom: '1px solid #ccc', padding: '8px' }}>Target</th>
+            <th style={{ borderBottom: '1px solid #ccc', padding: '8px' }}>Current Price</th>
+            <th style={{ borderBottom: '1px solid #ccc', padding: '8px' }}>Bought Price</th>
             <th style={{ borderBottom: '1px solid #ccc', padding: '8px' }}>ETA (Days)</th>
             <th style={{ borderBottom: '1px solid #ccc', padding: '8px' }}>Quantity</th>
             <th style={{ borderBottom: '1px solid #ccc', padding: '8px' }}>Holdings</th>
@@ -44,7 +48,7 @@ export const GttTable: React.FC<GttTableProps> = ({ orders }) => {
           {Object.keys(groupedOrders).map(symbol => (
             <React.Fragment key={symbol}>
               <tr style={{ backgroundColor: '#f0f0f0' }}>
-                <td colSpan={6} style={{ padding: '8px', fontWeight: 'bold' }}>{symbol}</td>
+                <td colSpan={8} style={{ padding: '8px', fontWeight: 'bold' }}>{symbol}</td>
               </tr>
               {groupedOrders[symbol].map(order => (
                 <tr key={order.id}>
@@ -64,6 +68,12 @@ export const GttTable: React.FC<GttTableProps> = ({ orders }) => {
                     transition: 'background-color 0.3s'
                   }}>
                     {order.target !== undefined ? order.target : '-'}
+                  </td>
+                  <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
+                    {order.currentPrice !== undefined ? order.currentPrice : '-'}
+                  </td>
+                  <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
+                    {order.boughtPrice !== undefined ? order.boughtPrice : '-'}
                   </td>
                   <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
                     {order.eta !== undefined && order.eta !== null ? order.eta : '-'}

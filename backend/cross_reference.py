@@ -1,6 +1,7 @@
 def calculate_discrepancy(gtt_orders, holdings):
     holdings_qty_map = {h["tradingsymbol"]: h["quantity"] for h in holdings} if holdings else {}
     holdings_ltp_map = {h["tradingsymbol"]: h.get("last_price", 0) for h in holdings} if holdings else {}
+    holdings_avg_price_map = {h["tradingsymbol"]: h.get("average_price", 0) for h in holdings} if holdings else {}
     
     enriched_gtts = []
     if not gtt_orders:
@@ -37,6 +38,9 @@ def calculate_discrepancy(gtt_orders, holdings):
         if not market_price:
             # Fallback to last_price in the condition if market_price from holdings is missing
             market_price = condition.get("last_price", 0)
+
+        enriched_gtt["last_price"] = market_price
+        enriched_gtt["average_price"] = holdings_avg_price_map.get(tradingsymbol, 0)
 
         if market_price > 0 and gtt.get("type") == "two-leg":
             trigger_values = condition.get("trigger_values", [])

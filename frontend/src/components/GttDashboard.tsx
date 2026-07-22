@@ -37,7 +37,9 @@ export const GttDashboard: React.FC = () => {
                 target,
                 type: gtt.type,
                 closestTrigger: gtt.closestTrigger,
-                eta: gtt.eta ? Math.round(gtt.eta) : null
+                eta: gtt.eta ? Math.round(gtt.eta) : null,
+                currentPrice: gtt.last_price,
+                boughtPrice: gtt.average_price
               };
             });
             setOrders(mappedOrders);
