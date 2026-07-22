@@ -15,7 +15,22 @@ async def lifespan(app: FastAPI):
     global kite_instance
     # Startup
     init_db()
-    kite_instance = authenticate_kite()
+    from kite_client import load_access_token, initialize_kite_with_token
+    cached_token = load_access_token()
+    if cached_token:
+        temp_kite = initialize_kite_with_token(cached_token)
+        if temp_kite:
+            try:
+                # Verify token validity
+                temp_kite.profile()
+                kite_instance = temp_kite
+                print("Successfully authenticated with Kite API using cached token.")
+            except Exception as e:
+                print(f"Cached token is invalid or expired: {e}")
+                kite_instance = None
+                
+    if not kite_instance:
+        kite_instance = authenticate_kite()
     if kite_instance:
         holdings = fetch_and_cache_holdings(kite_instance)
         fetch_and_cache_gtt_orders(kite_instance)

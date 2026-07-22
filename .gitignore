@@ -12,3 +12,4 @@ _bmad-output/
 
 venv/
 __pycache__/
+.kite_access_token

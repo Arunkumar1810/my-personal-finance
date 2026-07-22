@@ -1,9 +1,37 @@
+import os
 from kiteconnect import KiteConnect
 from config import settings
 from database import save_holdings
 from gtt_cache import set_cached_gtt_orders
 from atr_cache import set_cached_atr
 from datetime import datetime, timedelta
+
+TOKEN_CACHE_FILE = ".kite_access_token"
+
+def save_access_token(token):
+    try:
+        with open(TOKEN_CACHE_FILE, "w") as f:
+            f.write(token)
+    except Exception as e:
+        print(f"Failed to save access token to cache: {e}")
+
+def load_access_token():
+    if os.path.exists(TOKEN_CACHE_FILE):
+        try:
+            with open(TOKEN_CACHE_FILE, "r") as f:
+                return f.read().strip()
+        except Exception as e:
+            print(f"Failed to read access token from cache: {e}")
+    return None
+
+def initialize_kite_with_token(access_token):
+    try:
+        kite = KiteConnect(api_key=settings.KITE_API_KEY)
+        kite.set_access_token(access_token)
+        return kite
+    except Exception as e:
+        print(f"Failed to initialize Kite API with cached token: {e}")
+        return None
 
 def calculate_atr(historical_data):
     if len(historical_data) < 14:
@@ -52,6 +80,7 @@ def authenticate_kite(request_token=None):
         kite = KiteConnect(api_key=settings.KITE_API_KEY)
         data = kite.generate_session(token_to_use, api_secret=settings.KITE_API_SECRET)
         kite.set_access_token(data["access_token"])
+        save_access_token(data["access_token"])
         print("Successfully authenticated with Kite API.")
         return kite
     except Exception as e:
