@@ -13,9 +13,12 @@ def calculate_discrepancy(gtt_orders, holdings):
         # Calculate total trigger quantity for SELL orders in this GTT
         trigger_qty = 0
         orders = gtt.get("orders", [])
-        for order in orders:
-            if order.get("transaction_type") == "SELL":
-                trigger_qty += order.get("quantity", 0)
+        sell_quantities = [order.get("quantity", 0) for order in orders if order.get("transaction_type") == "SELL"]
+        
+        if len(sell_quantities) > 1:
+            trigger_qty = max(sell_quantities)
+        else:
+            trigger_qty = sum(sell_quantities)
         
         # Discrepancy = max(0, trigger_qty - actual holding)
         actual_holding = holdings_qty_map.get(tradingsymbol, 0)

@@ -106,9 +106,10 @@ def fetch_and_cache_holdings(kite):
 def fetch_and_cache_gtt_orders(kite):
     try:
         gtt_orders = kite.get_gtts()
-        set_cached_gtt_orders(gtt_orders)
-        print("GTT orders fetched and cached successfully.")
-        return gtt_orders
+        active_gtts = [gtt for gtt in gtt_orders if gtt.get('status') == 'active']
+        set_cached_gtt_orders(active_gtts)
+        print(f"GTT orders fetched and cached successfully ({len(active_gtts)} active).")
+        return active_gtts
     except Exception as e:
         print(f"Failed to fetch GTT orders: {e}")
         return None
