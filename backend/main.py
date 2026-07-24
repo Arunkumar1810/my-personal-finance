@@ -1,8 +1,8 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Request
 from fastapi.responses import RedirectResponse
 from contextlib import asynccontextmanager
-from database import init_db, get_cached_holdings
-from kite_client import authenticate_kite, fetch_and_cache_holdings, fetch_and_cache_gtt_orders, fetch_and_cache_atr_for_holdings
+from database import init_db, get_cached_holdings, get_cached_positions
+from kite_client import authenticate_kite, fetch_and_cache_holdings, fetch_and_cache_gtt_orders, fetch_and_cache_atr_for_holdings, fetch_and_cache_positions
 from gtt_cache import get_cached_gtt_orders
 from websocket_manager import manager
 from cross_reference import construct_unified_payload
@@ -33,12 +33,14 @@ async def lifespan(app: FastAPI):
         kite_instance = authenticate_kite()
     if kite_instance:
         holdings = fetch_and_cache_holdings(kite_instance)
+        positions = fetch_and_cache_positions(kite_instance)
         fetch_and_cache_gtt_orders(kite_instance)
-        if holdings:
-            fetch_and_cache_atr_for_holdings(kite_instance, holdings)
+        if holdings or positions:
+            merged_items = (holdings or []) + (positions or [])
+            fetch_and_cache_atr_for_holdings(kite_instance, merged_items)
             
         from kite_ticker_manager import start_ticker
-        start_ticker(kite_instance.api_key, kite_instance.access_token, holdings)
+        start_ticker(kite_instance.api_key, kite_instance.access_token, (holdings or []) + (positions or []))
     yield
     # Shutdown
 
@@ -58,12 +60,14 @@ async def auth_callback(request_token: str):
     kite_instance = authenticate_kite(request_token)
     if kite_instance:
         holdings = fetch_and_cache_holdings(kite_instance)
+        positions = fetch_and_cache_positions(kite_instance)
         fetch_and_cache_gtt_orders(kite_instance)
-        if holdings:
-            fetch_and_cache_atr_for_holdings(kite_instance, holdings)
+        if holdings or positions:
+            merged_items = (holdings or []) + (positions or [])
+            fetch_and_cache_atr_for_holdings(kite_instance, merged_items)
             
         from kite_ticker_manager import start_ticker
-        start_ticker(kite_instance.api_key, kite_instance.access_token, holdings)
+        start_ticker(kite_instance.api_key, kite_instance.access_token, (holdings or []) + (positions or []))
         
         return {"status": "success", "message": "Successfully authenticated and initialized session"}
     return {"status": "error", "message": "Authentication failed"}
@@ -74,14 +78,15 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         # Push initial cached holdings and GTTs on connect
         cached_holdings = get_cached_holdings()
+        cached_positions = get_cached_positions()
         cached_gtts = get_cached_gtt_orders()
         
         # If gtt cache is empty/expired, fetch again
         if cached_gtts is None and kite_instance:
             cached_gtts = fetch_and_cache_gtt_orders(kite_instance)
             
-        if cached_holdings or cached_gtts:
-            unified_payload = construct_unified_payload(cached_gtts or [], cached_holdings or [])
+        if cached_holdings or cached_gtts or cached_positions:
+            unified_payload = construct_unified_payload(cached_gtts or [], cached_holdings or [], cached_positions or [])
             await manager.broadcast_unified(unified_payload)
             
         while True:

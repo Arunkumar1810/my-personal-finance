@@ -18,6 +18,13 @@ def init_db():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS positions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            data TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -34,6 +41,24 @@ def get_cached_holdings():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute('SELECT data FROM holdings ORDER BY updated_at DESC LIMIT 1')
+    row = cursor.fetchone()
+    conn.close()
+    if row:
+        return json.loads(row['data'])
+    return None
+
+def save_positions(positions_data):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM positions')
+    cursor.execute('INSERT INTO positions (data) VALUES (?)', (json.dumps(positions_data),))
+    conn.commit()
+    conn.close()
+
+def get_cached_positions():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT data FROM positions ORDER BY updated_at DESC LIMIT 1')
     row = cursor.fetchone()
     conn.close()
     if row:

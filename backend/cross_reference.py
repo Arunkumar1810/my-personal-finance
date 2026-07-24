@@ -76,9 +76,47 @@ def calculate_discrepancy(gtt_orders, holdings):
         
     return enriched_gtts
 
-def construct_unified_payload(gtt_orders, holdings):
-    enriched_gtts = calculate_discrepancy(gtt_orders, holdings)
+def merge_holdings_and_positions(holdings, positions):
+    unified = {}
+    
+    for item in (holdings or []):
+        ts = item.get("tradingsymbol")
+        if not ts:
+            continue
+        unified[ts] = dict(item)
+    
+    for item in (positions or []):
+        ts = item.get("tradingsymbol")
+        if not ts:
+            continue
+        if ts in unified:
+            existing = unified[ts]
+            old_qty = existing.get("quantity", 0)
+            old_pnl = existing.get("pnl", 0)
+            old_avg = existing.get("average_price", 0)
+            
+            new_qty = item.get("quantity", 0)
+            new_pnl = item.get("pnl", 0)
+            new_avg = item.get("average_price", 0)
+            
+            tot_qty = old_qty + new_qty
+            if tot_qty != 0:
+                tot_avg = ((old_qty * old_avg) + (new_qty * new_avg)) / tot_qty
+            else:
+                tot_avg = 0
+            
+            existing["quantity"] = tot_qty
+            existing["pnl"] = old_pnl + new_pnl
+            existing["average_price"] = tot_avg
+        else:
+            unified[ts] = dict(item)
+            
+    return list(unified.values())
+
+def construct_unified_payload(gtt_orders, holdings, positions=None):
+    merged_holdings = merge_holdings_and_positions(holdings, positions)
+    enriched_gtts = calculate_discrepancy(gtt_orders, merged_holdings)
     return {
-        "holdings": holdings,
+        "holdings": merged_holdings,
         "gtt_orders": enriched_gtts
     }

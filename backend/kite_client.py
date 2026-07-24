@@ -1,7 +1,7 @@
 import os
 from kiteconnect import KiteConnect
 from config import settings
-from database import save_holdings
+from database import save_holdings, save_positions
 from gtt_cache import set_cached_gtt_orders
 from atr_cache import set_cached_atr
 from datetime import datetime, timedelta
@@ -101,6 +101,17 @@ def fetch_and_cache_holdings(kite):
         return holdings
     except Exception as e:
         print(f"Failed to fetch holdings: {e}")
+        return None
+
+def fetch_and_cache_positions(kite):
+    try:
+        positions = kite.positions()
+        net_positions = positions.get("net", []) if isinstance(positions, dict) else positions
+        save_positions(net_positions)
+        print("Positions fetched and cached successfully.")
+        return net_positions
+    except Exception as e:
+        print(f"Failed to fetch positions: {e}")
         return None
 
 def fetch_and_cache_gtt_orders(kite):
