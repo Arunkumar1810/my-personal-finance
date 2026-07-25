@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { GttTable, type GttOrder } from './GttTable';
+import { EmptyState } from './EmptyState';
+import { ErrorOverlay } from './ErrorOverlay';
 
 export const GttDashboard: React.FC = () => {
   const [orders, setOrders] = useState<GttOrder[]>([]);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8000/ws/holdings');
@@ -39,7 +42,8 @@ export const GttDashboard: React.FC = () => {
                 closestTrigger: gtt.closestTrigger,
                 eta: gtt.eta ? Math.round(gtt.eta) : null,
                 currentPrice: gtt.last_price,
-                boughtPrice: gtt.average_price
+                boughtPrice: gtt.average_price,
+                isSabotaged: Boolean(gtt.is_sabotaged)
               };
             });
             setOrders(mappedOrders);
@@ -57,10 +61,17 @@ export const GttDashboard: React.FC = () => {
 
     ws.onopen = () => {
       console.log("WebSocket connected");
+      setError(false);
     };
 
     ws.onclose = () => {
       console.log("WebSocket disconnected");
+      setError(true);
+    };
+
+    ws.onerror = (e) => {
+      console.error("WebSocket error", e);
+      setError(true);
     };
 
     return () => {
@@ -69,9 +80,16 @@ export const GttDashboard: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#fff', color: '#000' }}>
-      <h1>GTT Dashboard</h1>
-      <GttTable orders={orders} />
-    </div>
+    <>
+      {error && <ErrorOverlay />}
+      <div style={{ padding: '20px', fontFamily: 'sans-serif', backgroundColor: '#fff', color: '#000' }}>
+        <h1>GTT Dashboard</h1>
+        {!error && orders.length === 0 ? (
+          <EmptyState />
+        ) : !error ? (
+          <GttTable orders={orders} />
+        ) : null}
+      </div>
+    </>
   );
 };

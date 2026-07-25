@@ -7,5 +7,6 @@ class Settings:
     KITE_API_KEY = os.getenv("KITE_API_KEY")
     KITE_API_SECRET = os.getenv("KITE_API_SECRET")
     KITE_REQUEST_TOKEN = os.getenv("KITE_REQUEST_TOKEN")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 settings = Settings()
