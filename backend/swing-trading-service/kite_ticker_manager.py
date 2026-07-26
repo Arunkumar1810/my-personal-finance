@@ -1,5 +1,5 @@
 from kiteconnect import KiteTicker
-from websocket_manager import manager
+from connection_manager import manager
 import asyncio
 
 ticker_instance = None

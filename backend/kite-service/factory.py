@@ -1,5 +1,5 @@
 from fastapi import Request, HTTPException
-from .interface import IKiteAdapter
+from .i_kite_adapter import IKiteAdapter
 from .dev_adapter import DevModeKiteAdapter
 from .production_adapter import ProductionKiteAdapter
 from kite_client import authenticate_kite

@@ -1,6 +1,6 @@
 import os
 from kiteconnect import KiteConnect
-from config import settings
+from settings import settings
 from database import save_holdings, save_positions
 from gtt_cache import set_cached_gtt_orders
 from atr_cache import set_cached_atr

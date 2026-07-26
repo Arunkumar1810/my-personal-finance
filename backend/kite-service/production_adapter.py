@@ -1,5 +1,5 @@
 from typing import Any, Dict, List
-from .interface import IKiteAdapter
+from .i_kite_adapter import IKiteAdapter
 
 class ProductionKiteAdapter(IKiteAdapter):
     """

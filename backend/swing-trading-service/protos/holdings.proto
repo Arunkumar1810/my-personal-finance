@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package holdings;
+
+service KiteService {
+  rpc GetHoldings(HoldingsRequest) returns (HoldingsResponse);
+}
+
+message HoldingsRequest {
+  // Empty request for now, or we can include user_id if needed
+}
+
+message Holding {
+  string tradingsymbol = 1;
+  string exchange = 2;
+  string instrument_token = 3;
+  int32 quantity = 4;
+  double average_price = 5;
+  double last_price = 6;
+  double pnl = 7;
+}
+
+message HoldingsResponse {
+  repeated Holding holdings = 1;
+}
