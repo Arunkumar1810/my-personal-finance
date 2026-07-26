@@ -15,10 +15,11 @@ Generates a software design document proposal for a single user-specified story 
 
 ### Step 1: Identify Target Story
 If the user did not specify which story they want to propose (e.g., "Story 1.1") in their request:
-1. Read `{project-root}/_bmad-output/planning-artifacts/epics.md`.
-2. Extract the list of available stories (including their numbers and titles).
-3. Present this list to the user and ask them to select which story they want to propose.
-4. Stop and wait for the user to clarify before proceeding.
+1. Read `{project-root}/_bmad-output/planning-artifacts/epics.md` to extract the full list of stories (including their numbers and titles).
+2. Check the archive at `{project-root}/openspec/changes/archive/` to identify which stories have already been implemented (look for change directories prefixed with the story number, e.g., `story-1-1`).
+3. Filter out any stories that are already in the archive.
+4. Present the filtered list of available, unimplemented stories to the user and ask them to select which story they want to propose. Do NOT suggest stories that are already implemented.
+5. Stop and wait for the user to clarify before proceeding.
 
 ### Step 2: Load Context
 Once the target story is known, read the following core artifacts to establish the requirements and the structural constraints:
