@@ -4,6 +4,7 @@ package holdings;
 
 service KiteService {
   rpc GetHoldings(HoldingsRequest) returns (HoldingsResponse);
+  rpc StreamLiveTicks(LiveTicksRequest) returns (stream LiveTick);
 }
 
 message HoldingsRequest {
@@ -22,4 +23,19 @@ message Holding {
 
 message HoldingsResponse {
   repeated Holding holdings = 1;
+}
+
+message LiveTicksRequest {
+  // Client can send a request to start receiving ticks.
+  // Can add instrument tokens here if needed.
+}
+
+message LiveTick {
+  string instrument_token = 1;
+  double last_price = 2;
+  int64 volume = 3;
+  double buy_quantity = 4;
+  double sell_quantity = 5;
+  double open_interest = 6;
+  string timestamp = 7;
 }

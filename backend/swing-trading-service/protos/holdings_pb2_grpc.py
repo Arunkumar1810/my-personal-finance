@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import holdings_pb2 as holdings__pb2
+from protos import holdings_pb2 as protos_dot_holdings__pb2
 
 GRPC_GENERATED_VERSION = '1.83.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in holdings_pb2_grpc.py depends on'
+        + ' but the generated code in protos/holdings_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,8 +36,13 @@ class KiteServiceStub:
         """
         self.GetHoldings = channel.unary_unary(
                 '/holdings.KiteService/GetHoldings',
-                request_serializer=holdings__pb2.HoldingsRequest.SerializeToString,
-                response_deserializer=holdings__pb2.HoldingsResponse.FromString,
+                request_serializer=protos_dot_holdings__pb2.HoldingsRequest.SerializeToString,
+                response_deserializer=protos_dot_holdings__pb2.HoldingsResponse.FromString,
+                _registered_method=True)
+        self.StreamLiveTicks = channel.unary_stream(
+                '/holdings.KiteService/StreamLiveTicks',
+                request_serializer=protos_dot_holdings__pb2.LiveTicksRequest.SerializeToString,
+                response_deserializer=protos_dot_holdings__pb2.LiveTick.FromString,
                 _registered_method=True)
 
 
@@ -50,13 +55,24 @@ class KiteServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def StreamLiveTicks(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_KiteServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetHoldings': grpc.unary_unary_rpc_method_handler(
                     servicer.GetHoldings,
-                    request_deserializer=holdings__pb2.HoldingsRequest.FromString,
-                    response_serializer=holdings__pb2.HoldingsResponse.SerializeToString,
+                    request_deserializer=protos_dot_holdings__pb2.HoldingsRequest.FromString,
+                    response_serializer=protos_dot_holdings__pb2.HoldingsResponse.SerializeToString,
+            ),
+            'StreamLiveTicks': grpc.unary_stream_rpc_method_handler(
+                    servicer.StreamLiveTicks,
+                    request_deserializer=protos_dot_holdings__pb2.LiveTicksRequest.FromString,
+                    response_serializer=protos_dot_holdings__pb2.LiveTick.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -84,8 +100,35 @@ class KiteService:
             request,
             target,
             '/holdings.KiteService/GetHoldings',
-            holdings__pb2.HoldingsRequest.SerializeToString,
-            holdings__pb2.HoldingsResponse.FromString,
+            protos_dot_holdings__pb2.HoldingsRequest.SerializeToString,
+            protos_dot_holdings__pb2.HoldingsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def StreamLiveTicks(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/holdings.KiteService/StreamLiveTicks',
+            protos_dot_holdings__pb2.LiveTicksRequest.SerializeToString,
+            protos_dot_holdings__pb2.LiveTick.FromString,
             options,
             channel_credentials,
             insecure,

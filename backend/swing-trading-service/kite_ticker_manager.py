@@ -14,7 +14,14 @@ def on_ticks(ws, ticks):
     try:
         asyncio.run_coroutine_threadsafe(manager.broadcast_ticks(ticks), app_loop)
     except Exception as e:
-        print(f"Error broadcasting ticks: {e}")
+        print(f"Error broadcasting ticks via WebSocket: {e}")
+        
+    try:
+        from grpc_server import broadcast_tick_to_streams
+        for tick in ticks:
+            broadcast_tick_to_streams(tick)
+    except Exception as e:
+        print(f"Error broadcasting ticks via gRPC: {e}")
 
 def on_connect(ws, response):
     print("KiteTicker connected successfully")

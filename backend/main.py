@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException, Request
+import asyncio
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 import grpc
 import sys
@@ -7,8 +9,27 @@ import os
 # Add swing-trading-service to path so we can import protos
 sys.path.append(os.path.join(os.path.dirname(__file__), 'swing-trading-service'))
 from protos import holdings_pb2, holdings_pb2_grpc
+from tick_consumer import consume_ticks
+from connection_manager import manager
 
-app = FastAPI(title="Monolith API Gateway")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start the gRPC background consumer
+    consumer_task = asyncio.create_task(consume_ticks())
+    yield
+    # Cancel task on shutdown
+    consumer_task.cancel()
+
+app = FastAPI(title="Monolith API Gateway", lifespan=lifespan)
+
+@app.websocket("/ws/holdings")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
 
 def get_grpc_stub():
     # Connect to the Swing-Trading Service gRPC server
