@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Stream Live Ticks
 The Swing-Trading Service SHALL expose a gRPC server-streaming endpoint for live market ticks.

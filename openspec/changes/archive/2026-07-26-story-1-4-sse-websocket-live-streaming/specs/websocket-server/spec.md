@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: Consume Upstream Ticks
 The Monolith's WebSocket server subsystem SHALL maintain a background connection to the Swing-Trading Service's live tick stream to source tick data.
