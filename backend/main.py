@@ -1,0 +1,48 @@
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
+import grpc
+import sys
+import os
+
+# Add swing-trading-service to path so we can import protos
+sys.path.append(os.path.join(os.path.dirname(__file__), 'swing-trading-service'))
+from protos import holdings_pb2, holdings_pb2_grpc
+
+app = FastAPI(title="Monolith API Gateway")
+
+def get_grpc_stub():
+    # Connect to the Swing-Trading Service gRPC server
+    channel = grpc.insecure_channel('localhost:50052')
+    return holdings_pb2_grpc.KiteServiceStub(channel)
+
+@app.get("/api/holdings")
+async def get_holdings():
+    stub = get_grpc_stub()
+    request = holdings_pb2.HoldingsRequest()
+    
+    try:
+        # Task 1.2 & 2.1: 5-second context timeout wrapper for gRPC calls
+        response = stub.GetHoldings(request, timeout=5.0)
+        
+        # Task 2.2: Handle gRPC response serialization to JSON
+        holdings = []
+        for h in response.holdings:
+            holdings.append({
+                "tradingsymbol": h.tradingsymbol,
+                "exchange": h.exchange,
+                "instrument_token": h.instrument_token,
+                "quantity": h.quantity,
+                "average_price": h.average_price,
+                "last_price": h.last_price,
+                "pnl": h.pnl
+            })
+        
+        return JSONResponse(content={"holdings": holdings})
+        
+    except grpc.RpcError as e:
+        # Task 2.3: Return HTTP 504 on DeadlineExceeded
+        if e.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+            raise HTTPException(status_code=504, detail="Gateway Timeout: Swing-Trading Service took too long to respond.")
+        # Catch other errors
+        raise HTTPException(status_code=502, detail=f"Bad Gateway: {e.details()}")
+
