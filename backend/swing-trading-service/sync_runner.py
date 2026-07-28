@@ -9,6 +9,8 @@ from fasteners import InterProcessLock
 from main import get_sheets_client
 from moneycontrol_scraper import fetch_moneycontrol_data
 from gemini_parser import parse_market_data_with_gemini
+from kite_service_client import KiteServiceClient
+from database import save_holdings
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -76,12 +78,34 @@ def sync_job():
     finally:
         lock.release()
 
+def holdings_sync_job():
+    lock = InterProcessLock('holdings_sync.lock')
+    if not lock.acquire(blocking=False):
+        logger.info("Another instance of holdings_sync_job is already running. Skipping this cycle.")
+        return
+
+    try:
+        logger.info("Starting holdings sync job...")
+        client = KiteServiceClient()
+        holdings = client.get_holdings()
+        if holdings is not None:
+            save_holdings(holdings)
+            logger.info(f"Successfully synced {len(holdings)} holdings to cache.")
+        else:
+            logger.error("Failed to fetch holdings from Kite Service.")
+    except Exception as e:
+        logger.error(f"Failed during holdings sync job: {e}")
+    finally:
+        lock.release()
+
 if __name__ == "__main__":
     logger.info("Starting sync runner...")
     schedule.every(15).minutes.do(sync_job)
+    schedule.every(15).minutes.do(holdings_sync_job)
     
     # Run once immediately on startup
     sync_job()
+    holdings_sync_job()
     
     while True:
         schedule.run_pending()

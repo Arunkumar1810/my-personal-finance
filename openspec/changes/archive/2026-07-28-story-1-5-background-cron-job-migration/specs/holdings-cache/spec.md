@@ -1,7 +1,4 @@
-# Purpose
-TBD
-
-# Requirements
+## MODIFIED Requirements
 
 ### Requirement: Cache portfolio holdings locally
 The system MUST cache the user's current portfolio holdings into a local SQLite database after authenticating with Kite. The legacy Monolith environment MUST NOT run background jobs for this purpose and MUST NOT contain a `holdings_cache.db`.
