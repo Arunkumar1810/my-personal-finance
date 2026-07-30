@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15protos/holdings.proto\x12\x08holdings\"\x11\n\x0fHoldingsRequest\"\x96\x01\n\x07Holding\x12\x15\n\rtradingsymbol\x18\x01 \x01(\t\x12\x10\n\x08\x65xchange\x18\x02 \x01(\t\x12\x18\n\x10instrument_token\x18\x03 \x01(\t\x12\x10\n\x08quantity\x18\x04 \x01(\x05\x12\x15\n\raverage_price\x18\x05 \x01(\x01\x12\x12\n\nlast_price\x18\x06 \x01(\x01\x12\x0b\n\x03pnl\x18\x07 \x01(\x01\"7\n\x10HoldingsResponse\x12#\n\x08holdings\x18\x01 \x03(\x0b\x32\x11.holdings.Holding\"\x12\n\x10LiveTicksRequest\"\x9f\x01\n\x08LiveTick\x12\x18\n\x10instrument_token\x18\x01 \x01(\t\x12\x12\n\nlast_price\x18\x02 \x01(\x01\x12\x0e\n\x06volume\x18\x03 \x01(\x03\x12\x14\n\x0c\x62uy_quantity\x18\x04 \x01(\x01\x12\x15\n\rsell_quantity\x18\x05 \x01(\x01\x12\x15\n\ropen_interest\x18\x06 \x01(\x01\x12\x11\n\ttimestamp\x18\x07 \x01(\t2\x98\x01\n\x0bKiteService\x12\x44\n\x0bGetHoldings\x12\x19.holdings.HoldingsRequest\x1a\x1a.holdings.HoldingsResponse\x12\x43\n\x0fStreamLiveTicks\x12\x1a.holdings.LiveTicksRequest\x1a\x12.holdings.LiveTick0\x01\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15protos/holdings.proto\x12\x08holdings\"\x11\n\x0fHoldingsRequest\"\x96\x01\n\x07Holding\x12\x15\n\rtradingsymbol\x18\x01 \x01(\t\x12\x10\n\x08\x65xchange\x18\x02 \x01(\t\x12\x18\n\x10instrument_token\x18\x03 \x01(\t\x12\x10\n\x08quantity\x18\x04 \x01(\x05\x12\x15\n\raverage_price\x18\x05 \x01(\x01\x12\x12\n\nlast_price\x18\x06 \x01(\x01\x12\x0b\n\x03pnl\x18\x07 \x01(\x01\"I\n\x10HoldingsResponse\x12#\n\x08holdings\x18\x01 \x03(\x0b\x32\x11.holdings.Holding\x12\x10\n\x08\x66\x61llback\x18\x02 \x01(\x08\"\x12\n\x10LiveTicksRequest\"\x9f\x01\n\x08LiveTick\x12\x18\n\x10instrument_token\x18\x01 \x01(\t\x12\x12\n\nlast_price\x18\x02 \x01(\x01\x12\x0e\n\x06volume\x18\x03 \x01(\x03\x12\x14\n\x0c\x62uy_quantity\x18\x04 \x01(\x01\x12\x15\n\rsell_quantity\x18\x05 \x01(\x01\x12\x15\n\ropen_interest\x18\x06 \x01(\x01\x12\x11\n\ttimestamp\x18\x07 \x01(\t2\x98\x01\n\x0bKiteService\x12\x44\n\x0bGetHoldings\x12\x19.holdings.HoldingsRequest\x1a\x1a.holdings.HoldingsResponse\x12\x43\n\x0fStreamLiveTicks\x12\x1a.holdings.LiveTicksRequest\x1a\x12.holdings.LiveTick0\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -36,11 +36,11 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_HOLDING']._serialized_start=55
   _globals['_HOLDING']._serialized_end=205
   _globals['_HOLDINGSRESPONSE']._serialized_start=207
-  _globals['_HOLDINGSRESPONSE']._serialized_end=262
-  _globals['_LIVETICKSREQUEST']._serialized_start=264
-  _globals['_LIVETICKSREQUEST']._serialized_end=282
-  _globals['_LIVETICK']._serialized_start=285
-  _globals['_LIVETICK']._serialized_end=444
-  _globals['_KITESERVICE']._serialized_start=447
-  _globals['_KITESERVICE']._serialized_end=599
+  _globals['_HOLDINGSRESPONSE']._serialized_end=280
+  _globals['_LIVETICKSREQUEST']._serialized_start=282
+  _globals['_LIVETICKSREQUEST']._serialized_end=300
+  _globals['_LIVETICK']._serialized_start=303
+  _globals['_LIVETICK']._serialized_end=462
+  _globals['_KITESERVICE']._serialized_start=465
+  _globals['_KITESERVICE']._serialized_end=617
 # @@protoc_insertion_point(module_scope)

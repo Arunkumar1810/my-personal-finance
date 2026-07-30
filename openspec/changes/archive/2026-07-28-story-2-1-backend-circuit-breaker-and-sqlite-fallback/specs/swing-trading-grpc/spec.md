@@ -1,7 +1,4 @@
-## Purpose
-TBD
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Swing-Trading Service connects to Kite Adapter via gRPC
 The Swing-Trading Service MUST use a synchronous gRPC client to communicate with the Kite Adapter to fetch portfolio data. If the Kite Adapter is unresponsive or returns an error, it MUST fallback to the local SQLite cache.

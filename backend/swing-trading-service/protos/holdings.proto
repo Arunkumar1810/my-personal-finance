@@ -23,6 +23,7 @@ message Holding {
 
 message HoldingsResponse {
   repeated Holding holdings = 1;
+  bool fallback = 2;
 }
 
 message LiveTicksRequest {

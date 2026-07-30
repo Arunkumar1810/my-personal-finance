@@ -1,6 +1,10 @@
 import grpc
 from protos import holdings_pb2, holdings_pb2_grpc
 from settings import settings
+from circuit_breaker import CircuitBreaker, CircuitBreakerOpenException
+from database import get_cached_holdings
+
+cb = CircuitBreaker()
 
 class KiteServiceClient:
     def __init__(self):
@@ -12,7 +16,7 @@ class KiteServiceClient:
         request = holdings_pb2.HoldingsRequest()
         try:
             # Task 2.4: Configure the gRPC channel with strict timeouts (e.g., 5 seconds)
-            response = self.stub.GetHoldings(request, timeout=5.0)
+            response = cb.call(self.stub.GetHoldings, request, timeout=5.0)
             
             # Convert response back to dictionary list
             holdings = []
@@ -26,7 +30,10 @@ class KiteServiceClient:
                     "last_price": h.last_price,
                     "pnl": h.pnl
                 })
-            return holdings
-        except grpc.RpcError as e:
-            print(f"gRPC call GetHoldings failed: {e}")
+            return {"holdings": holdings, "fallback": False}
+        except (grpc.RpcError, CircuitBreakerOpenException) as e:
+            print(f"gRPC call GetHoldings failed or circuit open: {e}. Falling back to SQLite cache.")
+            cached = get_cached_holdings()
+            if cached is not None:
+                return {"holdings": cached, "fallback": True}
             return None

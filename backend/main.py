@@ -58,7 +58,7 @@ async def get_holdings():
                 "pnl": h.pnl
             })
         
-        return JSONResponse(content={"holdings": holdings})
+        return JSONResponse(content={"holdings": holdings, "fallback": response.fallback})
         
     except grpc.RpcError as e:
         # Task 2.3: Return HTTP 504 on DeadlineExceeded

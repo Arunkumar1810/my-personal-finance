@@ -87,12 +87,12 @@ def holdings_sync_job():
     try:
         logger.info("Starting holdings sync job...")
         client = KiteServiceClient()
-        holdings = client.get_holdings()
-        if holdings is not None:
-            save_holdings(holdings)
-            logger.info(f"Successfully synced {len(holdings)} holdings to cache.")
+        holdings_res = client.get_holdings()
+        if holdings_res is not None and not holdings_res.get("fallback", False):
+            save_holdings(holdings_res["holdings"])
+            logger.info(f"Successfully synced {len(holdings_res['holdings'])} holdings to cache.")
         else:
-            logger.error("Failed to fetch holdings from Kite Service.")
+            logger.error("Failed to fetch fresh holdings from Kite Service (or fell back to cache).")
     except Exception as e:
         logger.error(f"Failed during holdings sync job: {e}")
     finally:

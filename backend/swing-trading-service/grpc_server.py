@@ -14,14 +14,15 @@ class SwingTradingServiceServicer(holdings_pb2_grpc.KiteServiceServicer):
         self.kite_client = KiteServiceClient()
 
     def GetHoldings(self, request, context):
-        holdings = self.kite_client.get_holdings()
-        if holdings is None:
+        holdings_res = self.kite_client.get_holdings()
+        if holdings_res is None:
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details("Failed to fetch holdings from Kite Service")
             return holdings_pb2.HoldingsResponse()
             
         response = holdings_pb2.HoldingsResponse()
-        for h in holdings:
+        response.fallback = holdings_res.get("fallback", False)
+        for h in holdings_res["holdings"]:
             holding_msg = holdings_pb2.Holding(
                 tradingsymbol=h.get("tradingsymbol", ""),
                 exchange=h.get("exchange", ""),
