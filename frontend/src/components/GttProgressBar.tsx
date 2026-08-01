@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface GttProgressBarProps {
   stoplossPrice: number;
@@ -8,8 +8,6 @@ interface GttProgressBarProps {
 }
 
 export function GttProgressBar({ stoplossPrice, buyPrice, targetPrice, currentPrice }: GttProgressBarProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   // Calculate total range
   const minPrice = stoplossPrice;
   const maxPrice = targetPrice;
@@ -39,35 +37,16 @@ export function GttProgressBar({ stoplossPrice, buyPrice, targetPrice, currentPr
   } : {};
 
   return (
-    <div 
-      className="w-full relative group cursor-default"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Expanded detailed view on hover */}
-      {isHovered && (
-        <div className="absolute -top-10 left-0 right-0 flex justify-between text-xs font-mono bg-[#2C2C35] px-2 py-1 rounded shadow-lg z-10 border border-[#3C3C45]">
-          <div className="flex flex-col">
-            <span className="text-neutral-500">SL</span>
-            <span className="text-white">{stoplossPrice.toFixed(2)}</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className="text-neutral-500">Buy</span>
-            <span className="text-white">{buyPrice.toFixed(2)}</span>
-          </div>
-          <div className="flex flex-col items-center">
-            <span className={isProfit ? 'text-green-400' : 'text-red-400'}>CMP</span>
-            <span className="text-white font-bold flex items-center">
-              {currentPrice.toFixed(2)} 
-              {isProfit ? <span className="ml-1 text-green-400">↑</span> : <span className="ml-1 text-red-400">↓</span>}
-            </span>
-          </div>
-          <div className="flex flex-col items-end">
-            <span className="text-neutral-500">Target</span>
-            <span className="text-white">{targetPrice.toFixed(2)}</span>
-          </div>
-        </div>
-      )}
+    <div className="w-full relative cursor-default py-1">
+      {/* CMP Label (Above) */}
+      <div className="relative h-4 mb-1 text-[10px] font-mono">
+        <span 
+          className={`absolute -translate-x-1/2 font-bold ${isProfit ? 'text-green-400' : 'text-red-400'}`} 
+          style={{ left: `${currentPercent}%` }}
+        >
+          {currentPrice.toFixed(2)}
+        </span>
+      </div>
 
       {/* Progress Bar Track */}
       <div className="w-full h-3 bg-neutral-800 rounded overflow-hidden relative border border-neutral-700">
@@ -89,6 +68,13 @@ export function GttProgressBar({ stoplossPrice, buyPrice, targetPrice, currentPr
         
         {/* Current Price Indicator Line (Thicker/different color) */}
         <div className={`absolute top-0 bottom-0 w-[3px] z-0 ${isProfit ? 'bg-green-400' : 'bg-red-400'}`} style={{ left: `calc(${currentPercent}% - 1px)` }} />
+      </div>
+
+      {/* SL, Buy, Target Labels (Below) */}
+      <div className="relative h-4 mt-1 text-[10px] font-mono text-neutral-400">
+        <span className="absolute left-0">{stoplossPrice.toFixed(2)}</span>
+        <span className="absolute -translate-x-1/2 text-neutral-300" style={{ left: `${buyPercent}%` }}>{buyPrice.toFixed(2)}</span>
+        <span className="absolute right-0">{targetPrice.toFixed(2)}</span>
       </div>
     </div>
   );
