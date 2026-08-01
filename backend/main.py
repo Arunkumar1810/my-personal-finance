@@ -1,7 +1,8 @@
 import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Request, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse, RedirectResponse
 import grpc
 import sys
 import os
@@ -9,8 +10,11 @@ import os
 # Add swing-trading-service to path so we can import protos
 sys.path.append(os.path.join(os.path.dirname(__file__), 'swing-trading-service'))
 from protos import holdings_pb2, holdings_pb2_grpc
+from kite_client import get_kite_login_url, authenticate_kite
 from tick_consumer import consume_ticks
 from connection_manager import manager
+
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -21,6 +25,30 @@ async def lifespan(app: FastAPI):
     consumer_task.cancel()
 
 app = FastAPI(title="Monolith API Gateway", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/api/auth/login-url")
+def auth_login_url():
+    url = get_kite_login_url()
+    if url:
+        return {"url": url}
+    else:
+        raise HTTPException(status_code=500, detail="Kite API Key not configured")
+
+@app.get("/api/auth/callback")
+def auth_callback(request_token: str):
+    kite = authenticate_kite(request_token=request_token)
+    if kite:
+        return RedirectResponse(url="http://localhost:5173/settings?auth=success")
+    else:
+        return RedirectResponse(url="http://localhost:5173/settings?auth=error")
 
 @app.websocket("/ws/holdings")
 async def websocket_endpoint(websocket: WebSocket):

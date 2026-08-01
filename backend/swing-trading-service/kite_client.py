@@ -71,6 +71,18 @@ def authenticate_kite(request_token=None):
         print("Kite API credentials not fully provided in .env.")
         return False
     
+    access_token = load_access_token()
+    if access_token:
+        kite = initialize_kite_with_token(access_token)
+        if kite:
+            try:
+                kite.profile()
+                print("Successfully authenticated with cached access token.")
+                return kite
+            except Exception as e:
+                print(f"Cached access token is invalid: {e}")
+                # Fallthrough to generate new token
+    
     token_to_use = request_token or settings.KITE_REQUEST_TOKEN
     if not token_to_use:
         print("Kite Request Token not provided. Please authenticate via /api/auth/login")

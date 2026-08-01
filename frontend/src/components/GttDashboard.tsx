@@ -10,6 +10,31 @@ export const GttDashboard: React.FC = () => {
   const { setIsFallback } = useFallback();
 
   useEffect(() => {
+    // Fetch initial holdings on mount
+    fetch('http://localhost:8000/api/holdings')
+      .then(res => res.json())
+      .then(data => {
+        if (typeof data.fallback !== 'undefined') {
+          setIsFallback(Boolean(data.fallback));
+        }
+        if (data.holdings) {
+          const mappedOrders: GttOrder[] = data.holdings.map((h: any) => ({
+            id: h.instrument_token || String(Math.random()),
+            symbol: h.tradingsymbol,
+            quantity: h.quantity,
+            holdings: h.quantity,
+            boughtPrice: h.average_price,
+            currentPrice: h.last_price,
+            type: 'single',
+          }));
+          setOrders(mappedOrders);
+        }
+      })
+      .catch(e => {
+        console.error("Failed to fetch initial holdings", e);
+        setError(true);
+      });
+
     const ws = new WebSocket('ws://localhost:8000/ws/holdings');
     
     ws.onmessage = (event) => {

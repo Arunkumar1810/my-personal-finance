@@ -16,6 +16,7 @@ def get_kite_adapter(request: Request) -> IKiteAdapter:
         
     kite_client = authenticate_kite()
     if not kite_client:
-        raise HTTPException(status_code=500, detail="Failed to initialize Kite Production Adapter")
+        print("Warning: Failed to initialize Kite Production Adapter. Falling back to DevModeKiteAdapter.")
+        return DevModeKiteAdapter()
         
     return ProductionKiteAdapter(kite_client)
