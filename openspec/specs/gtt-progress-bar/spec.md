@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Capability: GTT Progress Bar
+
+## Purpose
+TBD
+
+## Requirements
 
 ### Requirement: GttProgressBar Component
 The system SHALL display a read-only GttProgressBar component for Sell GTT orders. It MUST include a horizontal track, fixed vertical markers for Stoploss, Buy Price, and Target, and a dynamic fill representing the Current Price.

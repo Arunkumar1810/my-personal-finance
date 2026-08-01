@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Capability: Active Trades Page
+
+## Purpose
+TBD
+
+## Requirements
 
 ### Requirement: Active Trades Page Layout
 The system SHALL provide an Active Trades page divided vertically into three primary sections: Active Holdings, Pending Buy GTT Orders, and Orphaned Sell GTT Orders.

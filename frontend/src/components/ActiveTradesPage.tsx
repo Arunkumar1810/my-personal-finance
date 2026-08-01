@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { HoldingsTable } from './HoldingsTable';
 import { ErrorOverlay } from './ErrorOverlay';
 
@@ -62,11 +62,17 @@ export function ActiveTradesPage() {
               } else if (triggers.length > 0) {
                 triggerPrice = triggers[0];
               }
+              let quantity = 1;
+              if (gtt.orders && gtt.orders.length > 0) {
+                quantity = gtt.orders[0].quantity;
+              } else if (gtt.discrepancy && gtt.discrepancy.trigger_quantity) {
+                quantity = gtt.discrepancy.trigger_quantity;
+              }
               
               return {
                 id: gtt.id,
                 symbol,
-                quantity: gtt.discrepancy?.trigger_quantity || 1,
+                quantity,
                 triggerPrice,
                 stoplossPrice: stopLoss,
                 buyPrice: gtt.average_price || 0,
@@ -76,30 +82,47 @@ export function ActiveTradesPage() {
               };
             });
 
+            // Group identical GTT orders
+            const groupedGttsMap = new Map<string, any>();
+            parsedGtts.forEach((gtt: any) => {
+              const sym = (gtt.symbol || '').toString().trim().toUpperCase();
+              const key = `${sym}-${gtt.type}-${Number(gtt.triggerPrice).toFixed(2)}-${Number(gtt.stoplossPrice).toFixed(2)}-${Number(gtt.targetPrice).toFixed(2)}`;
+              if (groupedGttsMap.has(key)) {
+                const existing = groupedGttsMap.get(key);
+                existing.quantity = Number(existing.quantity) + Number(gtt.quantity || 0);
+              } else {
+                groupedGttsMap.set(key, { ...gtt });
+              }
+            });
+            const aggregatedGtts = Array.from(groupedGttsMap.values());
+
             // Group into pending buy, orphaned sell, and nested sell
-            const buys: any[] = [];
-            const orphaned: any[] = [];
             
             setHoldings(prevHoldings => {
-              const newHoldings = [...prevHoldings].map(h => ({...h, sellGtts: [...h.sellGtts]}));
-              parsedGtts.forEach((gtt: any) => {
+              const buys: any[] = [];
+              const orphaned: any[] = [];
+              const newHoldings = [...prevHoldings].map(h => ({...h, sellGtts: []}));
+              
+              aggregatedGtts.forEach((gtt: any) => {
                 const holding = newHoldings.find(h => h.symbol === gtt.symbol);
                 if (holding) {
-                  // It's a sell GTT associated with a holding
                   if (!holding.sellGtts.find((s: any) => s.id === gtt.id)) {
                      holding.sellGtts.push(gtt);
                   }
                 } else {
-                  // Orphaned or Buy
                   if (gtt.isBuy) buys.push(gtt);
                   else orphaned.push(gtt);
                 }
               });
+              
+              // Safely dispatch outer state updates asynchronously to avoid strict-mode double-invocation mutating external states improperly
+              queueMicrotask(() => {
+                setPendingBuyGtts(buys);
+                setOrphanedSellGtts(orphaned);
+              });
+              
               return newHoldings;
             });
-            
-            setPendingBuyGtts(buys);
-            setOrphanedSellGtts(orphaned);
           }
         }
       } catch (e) {

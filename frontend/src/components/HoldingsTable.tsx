@@ -81,7 +81,6 @@ export function HoldingsTable({ holdings = [] }: { holdings?: Holding[] }) {
                   <tr className="bg-[#1A1A21] border-b border-neutral-700">
                     <td colSpan={8} className="p-0">
                       <div className="pl-12 pr-4 py-4 space-y-3">
-                        <div className="text-xs font-semibold text-neutral-400 uppercase tracking-wider mb-2">Active Sell GTTs</div>
                         {holding.sellGtts.length === 0 ? (
                           <div className="text-sm text-neutral-500">No active sell orders for {holding.symbol}.</div>
                         ) : (
