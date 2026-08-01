@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
-import { GttDashboard } from './components/GttDashboard'
+import { ActiveTradesPage } from './components/ActiveTradesPage'
 import './App.css'
 
 import { WatchlistQueue } from './components/WatchlistQueue'
@@ -17,7 +17,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<AppLayout />}>
-            <Route index element={<GttDashboard />} />
+            <Route index element={<ActiveTradesPage />} />
             <Route path="watchlist" element={<WatchlistQueue />} />
             <Route path="history" element={<HistoryPlaceholder />} />
             <Route path="settings" element={<Settings />} />
