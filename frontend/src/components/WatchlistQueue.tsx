@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { TickerInputForm } from './TickerInputForm';
+import { useFallback } from './FallbackContext';
 
 export function WatchlistQueue() {
   const [watchlist, setWatchlist] = useState<string[]>(['AAPL', 'MSFT', 'GOOG']);
   const [pendingTickers, setPendingTickers] = useState<string[]>([]);
+  const { isFallback } = useFallback();
 
   const handleAddTicker = (ticker: string) => {
     setPendingTickers([...pendingTickers, ticker]);
@@ -30,12 +32,22 @@ export function WatchlistQueue() {
                 <td className="px-6 py-4 text-green-400">Active</td>
               </tr>
             ))}
-            {pendingTickers.map((ticker, index) => (
-              <tr key={`pending-${index}`} className="hover:bg-gray-750 transition-colors animate-pulse">
-                <td className="px-6 py-4 font-medium text-white">{ticker}</td>
-                <td className="px-6 py-4 text-yellow-500">Awaiting 15-min Sync</td>
-              </tr>
-            ))}
+            {pendingTickers.map((ticker, index) => {
+              const isSuspended = isFallback;
+              return (
+                <tr 
+                  key={`pending-${index}`} 
+                  className={`hover:bg-gray-750 transition-colors ${
+                    isSuspended ? 'opacity-50 line-through grayscale' : 'animate-pulse'
+                  }`}
+                >
+                  <td className="px-6 py-4 font-medium text-white">{ticker}</td>
+                  <td className={`px-6 py-4 ${isSuspended ? 'text-gray-400' : 'text-yellow-500'}`}>
+                    {isSuspended ? 'Suspended (Offline)' : 'Awaiting 15-min Sync'}
+                  </td>
+                </tr>
+              );
+            })}
             {watchlist.length === 0 && pendingTickers.length === 0 && (
               <tr>
                 <td colSpan={2} className="px-6 py-8 text-center text-gray-500">

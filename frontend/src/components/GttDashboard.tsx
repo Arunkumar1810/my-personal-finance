@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { GttTable, type GttOrder } from './GttTable';
 import { EmptyState } from './EmptyState';
 import { ErrorOverlay } from './ErrorOverlay';
+import { useFallback } from './FallbackContext';
 
 export const GttDashboard: React.FC = () => {
   const [orders, setOrders] = useState<GttOrder[]>([]);
   const [error, setError] = useState(false);
+  const { setIsFallback } = useFallback();
 
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8000/ws/holdings');
@@ -16,6 +18,11 @@ export const GttDashboard: React.FC = () => {
         
         if (message.type === "unified_update") {
           const payload = message.data;
+          
+          if (payload && typeof payload.fallback !== 'undefined') {
+            setIsFallback(Boolean(payload.fallback));
+          }
+          
           if (payload && payload.gtt_orders) {
             const mappedOrders: GttOrder[] = payload.gtt_orders.map((gtt: any) => {
               const condition = gtt.condition || {};

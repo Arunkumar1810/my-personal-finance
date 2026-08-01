@@ -4,6 +4,7 @@ import { GttDashboard } from './components/GttDashboard'
 import './App.css'
 
 import { WatchlistQueue } from './components/WatchlistQueue'
+import { FallbackProvider } from './components/FallbackContext'
 
 function HistoryPlaceholder() {
   return <div className="p-8"><h2 className="text-2xl font-bold">History</h2></div>;
@@ -11,15 +12,17 @@ function HistoryPlaceholder() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<GttDashboard />} />
-          <Route path="watchlist" element={<WatchlistQueue />} />
-          <Route path="history" element={<HistoryPlaceholder />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <FallbackProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<GttDashboard />} />
+            <Route path="watchlist" element={<WatchlistQueue />} />
+            <Route path="history" element={<HistoryPlaceholder />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </FallbackProvider>
   )
 }
 

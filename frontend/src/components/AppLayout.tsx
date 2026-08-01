@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { OfflineWarningBanner } from './OfflineWarningBanner';
 
 export function AppLayout() {
   return (
@@ -50,8 +51,11 @@ export function AppLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-auto bg-background">
-        <Outlet />
+      <main className="flex-1 overflow-auto bg-background flex flex-col">
+        <OfflineWarningBanner />
+        <div className="flex-1 overflow-auto">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

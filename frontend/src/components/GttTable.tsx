@@ -1,4 +1,5 @@
 import React from 'react';
+import { useFallback } from './FallbackContext';
 
 export interface GttOrder {
   id: string;
@@ -22,6 +23,7 @@ interface GttTableProps {
 
 export const GttTable: React.FC<GttTableProps> = ({ orders }) => {
   const [overriddenOrders, setOverriddenOrders] = React.useState<Set<string>>(new Set());
+  const { isFallback } = useFallback();
 
   const handleOverride = (id: string) => {
     setOverriddenOrders(prev => {
@@ -141,14 +143,37 @@ export const GttTable: React.FC<GttTableProps> = ({ orders }) => {
                     {renderProgressBar(order)}
                   </td>
                   <td style={{ padding: '8px', borderBottom: '1px solid #eee' }}>
-                    {isSabotaged && (
+                    <div className="flex gap-2">
                       <button 
-                        onClick={() => handleOverride(order.id)}
-                        className="px-2 py-1 text-xs font-semibold rounded bg-white text-black hover:bg-gray-200"
+                        disabled={isFallback}
+                        title={isFallback ? "Action disabled during live data outage" : ""}
+                        className={`px-2 py-1 text-xs font-semibold rounded ${isFallback ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700 text-white'}`}
                       >
-                        Override
+                        Buy
                       </button>
-                    )}
+                      <button 
+                        disabled={isFallback}
+                        title={isFallback ? "Action disabled during live data outage" : ""}
+                        className={`px-2 py-1 text-xs font-semibold rounded ${isFallback ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white'}`}
+                      >
+                        Sell
+                      </button>
+                      <button 
+                        disabled={isFallback}
+                        title={isFallback ? "Action disabled during live data outage" : ""}
+                        className={`px-2 py-1 text-xs font-semibold rounded ${isFallback ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                      >
+                        Modify
+                      </button>
+                      {isSabotaged && (
+                        <button 
+                          onClick={() => handleOverride(order.id)}
+                          className="px-2 py-1 text-xs font-semibold rounded bg-white text-black hover:bg-gray-200"
+                        >
+                          Override
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               )})}
