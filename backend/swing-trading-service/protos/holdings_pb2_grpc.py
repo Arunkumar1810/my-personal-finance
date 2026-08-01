@@ -44,6 +44,11 @@ class KiteServiceStub:
                 request_serializer=protos_dot_holdings__pb2.LiveTicksRequest.SerializeToString,
                 response_deserializer=protos_dot_holdings__pb2.LiveTick.FromString,
                 _registered_method=True)
+        self.StreamUnifiedUpdates = channel.unary_stream(
+                '/holdings.KiteService/StreamUnifiedUpdates',
+                request_serializer=protos_dot_holdings__pb2.UnifiedUpdateRequest.SerializeToString,
+                response_deserializer=protos_dot_holdings__pb2.UnifiedUpdate.FromString,
+                _registered_method=True)
 
 
 class KiteServiceServicer:
@@ -61,6 +66,12 @@ class KiteServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def StreamUnifiedUpdates(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_KiteServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -73,6 +84,11 @@ def add_KiteServiceServicer_to_server(servicer, server):
                     servicer.StreamLiveTicks,
                     request_deserializer=protos_dot_holdings__pb2.LiveTicksRequest.FromString,
                     response_serializer=protos_dot_holdings__pb2.LiveTick.SerializeToString,
+            ),
+            'StreamUnifiedUpdates': grpc.unary_stream_rpc_method_handler(
+                    servicer.StreamUnifiedUpdates,
+                    request_deserializer=protos_dot_holdings__pb2.UnifiedUpdateRequest.FromString,
+                    response_serializer=protos_dot_holdings__pb2.UnifiedUpdate.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -129,6 +145,33 @@ class KiteService:
             '/holdings.KiteService/StreamLiveTicks',
             protos_dot_holdings__pb2.LiveTicksRequest.SerializeToString,
             protos_dot_holdings__pb2.LiveTick.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def StreamUnifiedUpdates(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_stream(
+            request,
+            target,
+            '/holdings.KiteService/StreamUnifiedUpdates',
+            protos_dot_holdings__pb2.UnifiedUpdateRequest.SerializeToString,
+            protos_dot_holdings__pb2.UnifiedUpdate.FromString,
             options,
             channel_credentials,
             insecure,

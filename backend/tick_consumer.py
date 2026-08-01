@@ -1,4 +1,5 @@
 import asyncio
+import json
 import grpc
 from protos import holdings_pb2, holdings_pb2_grpc
 from connection_manager import manager
@@ -32,4 +33,26 @@ async def consume_ticks():
             await asyncio.sleep(5)
         except Exception as e:
             print(f"Unexpected error in gRPC consumer: {e}. Retrying in 5 seconds...")
+            await asyncio.sleep(5)
+
+async def consume_unified_updates():
+    # Connect to the Swing-Trading Service
+    channel = grpc.aio.insecure_channel('localhost:50051')  # Port is 50051 for KiteService in grpc_server.py
+    stub = holdings_pb2_grpc.KiteServiceStub(channel)
+    
+    while True:
+        try:
+            request = holdings_pb2.UnifiedUpdateRequest()
+            print("Connecting to StreamUnifiedUpdates gRPC endpoint...")
+            
+            async for update in stub.StreamUnifiedUpdates(request):
+                if update.payload:
+                    data = json.loads(update.payload)
+                    await manager.broadcast_unified(data)
+                    
+        except grpc.RpcError as e:
+            print(f"Unified Updates gRPC stream disconnected: {e}. Retrying in 5 seconds...")
+            await asyncio.sleep(5)
+        except Exception as e:
+            print(f"Unexpected error in unified updates consumer: {e}. Retrying in 5 seconds...")
             await asyncio.sleep(5)

@@ -63,6 +63,34 @@ class KiteServiceServicer(holdings_pb2_grpc.KiteServiceServicer):
         while context.is_active():
             time.sleep(1)
 
+    def StreamUnifiedUpdates(self, request, context):
+        import json
+        from cross_reference import construct_unified_payload
+        
+        while context.is_active():
+            token_file = os.path.join(os.path.dirname(__file__), '..', 'swing-trading-service', '.kite_access_token')
+            current_mtime = os.path.getmtime(token_file) if os.path.exists(token_file) else 0
+            if current_mtime != self.last_mtime:
+                print("Token file modified, reloading adapter for unified stream...")
+                self._load_adapter()
+
+            try:
+                holdings = self.adapter.holdings()
+                gtt_orders = self.adapter.get_gtts()
+                
+                # Filter to active GTTs
+                active_gtts = [gtt for gtt in gtt_orders if gtt.get('status') == 'active']
+                
+                payload = construct_unified_payload(active_gtts, holdings, None)
+                payload_str = json.dumps(payload)
+                
+                yield holdings_pb2.UnifiedUpdate(payload=payload_str)
+            except Exception as e:
+                print(f"Error in StreamUnifiedUpdates: {e}")
+                
+            # Poll every 5 seconds
+            time.sleep(5)
+
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     holdings_pb2_grpc.add_KiteServiceServicer_to_server(KiteServiceServicer(), server)

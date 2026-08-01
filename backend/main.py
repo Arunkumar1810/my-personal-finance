@@ -11,7 +11,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'swing-trading-service'))
 from protos import holdings_pb2, holdings_pb2_grpc
 from kite_client import get_kite_login_url, authenticate_kite
-from tick_consumer import consume_ticks
+from tick_consumer import consume_ticks, consume_unified_updates
 from connection_manager import manager
 
 
@@ -20,9 +20,11 @@ from connection_manager import manager
 async def lifespan(app: FastAPI):
     # Start the gRPC background consumer
     consumer_task = asyncio.create_task(consume_ticks())
+    unified_task = asyncio.create_task(consume_unified_updates())
     yield
     # Cancel task on shutdown
     consumer_task.cancel()
+    unified_task.cancel()
 
 app = FastAPI(title="Monolith API Gateway", lifespan=lifespan)
 

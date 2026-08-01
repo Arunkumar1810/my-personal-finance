@@ -5,6 +5,14 @@ package holdings;
 service KiteService {
   rpc GetHoldings(HoldingsRequest) returns (HoldingsResponse);
   rpc StreamLiveTicks(LiveTicksRequest) returns (stream LiveTick);
+  rpc StreamUnifiedUpdates(UnifiedUpdateRequest) returns (stream UnifiedUpdate);
+}
+
+message UnifiedUpdateRequest {
+}
+
+message UnifiedUpdate {
+  string payload = 1;
 }
 
 message HoldingsRequest {
