@@ -1,0 +1,64 @@
+{
+  "schema_version": 2,
+  "subject": "C:\\ak\\MyRepo\\personal-finance\\.agent\\skills\\sdd-refine",
+  "generated": "2026-08-02T17:08:00+05:30",
+  "verdict": "Skill successfully integrates OpenSpec PR 893 instructions, but requires structural fixes to meet BMad standards.",
+  "grade": "fair",
+  "summary": "The skill perfectly matches the OpenSpec refine-change workflow and holds all necessary instructions. However, it lacks standard BMad activation and overview sections.",
+  "standards": {
+    "canon": "C:\\ak\\MyRepo\\personal-finance\\.agent\\skills\\bmad-workflow-builder\\references\\prompt-quality-canon.md",
+    "principles": "C:\\ak\\MyRepo\\personal-finance\\.agent\\skills\\bmad-workflow-builder\\references\\skill-quality-principles.md",
+    "scripts": "C:\\ak\\MyRepo\\personal-finance\\.agent\\skills\\bmad-workflow-builder\\references\\script-standards.md"
+  },
+  "themes": [
+    {
+      "title": "Missing Required BMad Sections",
+      "root_cause": "The skill was ported directly from OpenSpec which uses a different section standard than BMad. BMad requires 'On Activation' and standard headers.",
+      "finding_ids": ["integrity-1", "integrity-2"],
+      "action": "Add the 'On Activation' section and ensure standard headers are used."
+    }
+  ],
+  "strengths": [
+    "Comprehensive coverage of the OpenSpec sdd-refine workflow.",
+    "Clear graceful degradation instructions."
+  ],
+  "recommendations": [
+    {
+      "rank": 1,
+      "action": "Add an 'On Activation' section and fix '# Overview' to '## Overview' to meet BMad standards.",
+      "resolves": ["integrity-1", "integrity-2"]
+    }
+  ],
+  "experience": {
+    "headless": "No explicit headless support mentioned in instructions."
+  },
+  "findings": [
+    {
+      "id": "integrity-1",
+      "lens": "workflow-integrity",
+      "severity": "high",
+      "title": "Missing Overview",
+      "location": "SKILL.md",
+      "evidence": "Missing ## Overview section (currently uses # Overview)",
+      "recommendation": "Change # Overview to ## Overview"
+    },
+    {
+      "id": "integrity-2",
+      "lens": "workflow-integrity",
+      "severity": "high",
+      "title": "Missing On Activation",
+      "location": "SKILL.md",
+      "evidence": "Missing ## On Activation section",
+      "recommendation": "Add ## On Activation section"
+    },
+    {
+      "id": "path-1",
+      "lens": "path-standards",
+      "severity": "medium",
+      "title": "Prompt file at root",
+      "location": ".memlog.md",
+      "evidence": "Prompt file at skill root: .memlog.md",
+      "recommendation": "Move .memlog.md to references/.memlog.md"
+    }
+  ]
+}
