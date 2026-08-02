@@ -35,8 +35,8 @@ Last updated: 2026-08-02
   - `openspec/changes/xirr-transactions-tab/design.md`
 
 #### P1(1): Realign Tasks with Kite & Swing Trading Service
-- **Status**: Open
-- **Notes**: `tasks.md` reflects completed tasks for local SQLite. These need to be rewritten to reflect the new integration with Kite Service and Swing Trading Service.
+- **Status**: Resolved
+- **Notes**: `tasks.md` rewritten to reflect the new integration with Kite Service and Swing Trading Service, with all checkboxes reset.
 - **Artifacts touched**:
   - `openspec/changes/xirr-transactions-tab/tasks.md`
 
