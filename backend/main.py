@@ -13,8 +13,9 @@ from protos import holdings_pb2, holdings_pb2_grpc
 from kite_client import get_kite_login_url, authenticate_kite
 from tick_consumer import consume_ticks, consume_unified_updates
 from connection_manager import manager
-from database import get_transactions, save_transaction
 from pydantic import BaseModel
+from console_client import authenticate_console, fetch_and_parse_ledger
+from database import get_transactions, save_transaction, wipe_transactions
 
 
 
@@ -143,6 +144,26 @@ async def create_transaction(tx: TransactionCreate):
     try:
         save_transaction(tx.date, tx.amount, tx.type)
         return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class ConsoleLoginRequest(BaseModel):
+    user_id: str
+    password: str
+    totp_code: str
+
+@app.post("/api/console/login")
+async def console_login(req: ConsoleLoginRequest):
+    try:
+        enctoken = authenticate_console(req.user_id, req.password, req.totp_code)
+        transactions = fetch_and_parse_ledger(enctoken)
+        
+        # Wipe old transactions and insert the new ones
+        wipe_transactions()
+        for tx in transactions:
+            save_transaction(tx["date"], tx["amount"], tx["type"])
+            
+        return {"status": "success", "fetched_transactions_count": len(transactions)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

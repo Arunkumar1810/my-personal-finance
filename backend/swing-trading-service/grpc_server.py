@@ -7,6 +7,7 @@ from protos import holdings_pb2, holdings_pb2_grpc
 from kite_service_client import KiteServiceClient
 from xirr_calc import calculate_xirr
 import datetime
+from database import get_transactions
 
 # A global list/set of active stream queues to route ticks to clients
 active_tick_streams = []
@@ -40,7 +41,6 @@ class SwingTradingServiceServicer(holdings_pb2_grpc.KiteServiceServicer):
     def GetPortfolioValuation(self, request, context):
         holdings_res = self.kite_client.get_holdings()
         margins_res = self.kite_client.get_margins()
-        tx_res = self.kite_client.get_cash_transactions()
         
         current_value = 0.0
         if holdings_res and not holdings_res.get("fallback", False):
@@ -50,7 +50,7 @@ class SwingTradingServiceServicer(holdings_pb2_grpc.KiteServiceServicer):
         available_funds = margins_res.get("available_cash", 0.0)
         
         # Calculate XIRR
-        transactions = tx_res.get("transactions", [])
+        transactions = get_transactions()
         
         # To calculate true XIRR, we add the current portfolio value as a final withdrawal (positive cash flow for the user)
         xirr_flows = list(transactions)

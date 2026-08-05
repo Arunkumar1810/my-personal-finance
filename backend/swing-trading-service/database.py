@@ -80,6 +80,13 @@ def save_transaction(date, amount, type):
     conn.commit()
     conn.close()
 
+def wipe_transactions():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM transactions')
+    conn.commit()
+    conn.close()
+
 def get_transactions():
     conn = get_db_connection()
     cursor = conn.cursor()
