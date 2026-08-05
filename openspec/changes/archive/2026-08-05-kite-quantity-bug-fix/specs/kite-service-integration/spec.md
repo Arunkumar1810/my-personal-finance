@@ -1,17 +1,4 @@
-# Capability: Kite Service Integration
-
-## Purpose
-TBD: Integration with Kite Service for transactions and portfolio values.
-
-## Requirements
-
-### Requirement: Kite Transaction Fetching
-The Kite Service integration SHALL dynamically fetch historical cash transactions (deposits and withdrawals).
-
-#### Scenario: Fetching transactions
-- **WHEN** the system needs transaction history
-- **THEN** the Kite Service API is queried
-- **AND** returns an array of cash flows with accurate dates and amounts.
+## MODIFIED Requirements
 
 ### Requirement: Kite Portfolio Value Fetching
 The Kite Service integration SHALL dynamically fetch the current portfolio value and available funds, ensuring that the total quantity for each holding aggregates `quantity`, `t1_quantity`, and `collateral_quantity` to accurately reflect unsettled and pledged assets.

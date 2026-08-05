@@ -46,7 +46,7 @@ class KiteServiceServicer(holdings_pb2_grpc.KiteServiceServicer):
                     tradingsymbol=h.get("tradingsymbol", ""),
                     exchange=h.get("exchange", ""),
                     instrument_token=str(h.get("instrument_token", "")),
-                    quantity=int(h.get("quantity", 0)),
+                    quantity=int(h.get("quantity", 0)) + int(h.get("t1_quantity", 0)) + int(h.get("collateral_quantity", 0)),
                     average_price=float(h.get("average_price", 0.0)),
                     last_price=float(h.get("last_price", 0.0)),
                     pnl=float(h.get("pnl", 0.0))
