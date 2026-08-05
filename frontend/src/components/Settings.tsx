@@ -20,24 +20,21 @@ export function Settings() {
     try {
       setLoading(true);
       setError(null);
-      // Assuming Vite proxy is set up or monolith is on :8000
-      const response = await fetch('http://localhost:8000/api/auth/login-url');
+      
+      // Verify and get login URL using the .env configuration on the backend
+      const response = await fetch('http://localhost:8000/api/broker/verify', { method: 'POST' });
       if (!response.ok) {
-        let errMsg = 'Failed to fetch login URL';
+        let errMsg = 'Failed to fetch login URL. Please ensure your .env file is configured correctly.';
         try {
           const errData = await response.json();
-          if (errData && errData.detail) {
-            errMsg = errData.detail;
-          }
-        } catch (e) {
-          // Ignore parsing errors
-        }
+          if (errData && errData.detail) errMsg = errData.detail;
+        } catch (e) { }
         throw new Error(errMsg);
       }
+      
       const data = await response.json();
-      if (data.url) {
-        // Redirect browser to Kite OAuth
-        window.location.href = data.url;
+      if (data.login_url) {
+        window.location.href = data.login_url;
       } else {
         throw new Error('No URL returned from backend');
       }
@@ -79,8 +76,9 @@ export function Settings() {
           <div className="flex items-center justify-between">
             <div>
               <h4 className="text-lg font-medium text-white">Zerodha Kite</h4>
-              <p className="text-sm text-gray-400 mt-1">Authenticate to fetch real-time holdings and active GTTs.</p>
+              <p className="text-sm text-gray-400 mt-1">Authenticate using your configured .env credentials to fetch real-time data.</p>
             </div>
+            
             <button
               onClick={handleKiteConnect}
               disabled={loading}

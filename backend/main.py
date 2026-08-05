@@ -15,7 +15,12 @@ from tick_consumer import consume_ticks, consume_unified_updates
 from connection_manager import manager
 from pydantic import BaseModel
 from console_client import authenticate_console, fetch_and_parse_ledger
-from database import get_transactions, save_transaction, wipe_transactions
+from database import (
+    get_transactions, save_transaction, wipe_transactions,
+    get_broker_credentials, save_broker_credentials, save_raw_executions, get_raw_executions
+)
+from settings import settings
+from kiteconnect import KiteConnect
 
 
 
@@ -167,3 +172,107 @@ async def console_login(req: ConsoleLoginRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+class BrokerCredentials(BaseModel):
+    api_key: str
+    api_secret: str
+
+@app.get("/api/broker/credentials")
+async def get_broker_credentials_endpoint():
+    creds = get_broker_credentials(user_id="default")
+    if creds:
+        return {"api_key": creds["api_key"], "has_secret": True}
+    elif settings.KITE_API_KEY:
+        # Fallback to .env
+        return {"api_key": settings.KITE_API_KEY, "has_secret": bool(settings.KITE_API_SECRET)}
+    return {}
+
+@app.post("/api/broker/credentials")
+async def save_broker_credentials_endpoint(creds: BrokerCredentials):
+    try:
+        save_broker_credentials("default", creds.api_key, creds.api_secret)
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/broker/verify")
+async def verify_broker_connection():
+    creds = get_broker_credentials("default")
+    api_key = creds["api_key"] if creds else settings.KITE_API_KEY
+    if not api_key:
+        raise HTTPException(status_code=400, detail="No credentials found")
+    
+    try:
+        kite = KiteConnect(api_key=api_key)
+        # A true verification requires logging in. Since we don't have an access token yet,
+        # we can just return the login url for the user to proceed.
+        login_url = kite.login_url()
+        return {"status": "success", "login_url": login_url}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/broker/sync")
+async def sync_broker_trades():
+    # Trade Ingestion Engine
+    from kite_client import load_access_token
+    creds = get_broker_credentials("default")
+    api_key = creds["api_key"] if creds else settings.KITE_API_KEY
+    if not api_key:
+        raise HTTPException(status_code=400, detail="No credentials found")
+        
+    access_token = load_access_token()
+    if not access_token:
+        raise HTTPException(status_code=401, detail="Not authenticated with Kite (missing access token)")
+        
+    try:
+        kite = KiteConnect(api_key=api_key)
+        kite.set_access_token(access_token)
+        
+        # Fetch trades for the day (Kite's trades endpoint returns today's trades)
+        trades = kite.trades()
+        
+        parsed_executions = []
+        for t in trades:
+            parsed_executions.append({
+                "ticker": t.get("tradingsymbol"),
+                "side": t.get("transaction_type"),
+                "quantity": float(t.get("quantity", 0)),
+                "price": float(t.get("average_price", 0)),
+                "timestamp": str(t.get("fill_timestamp", t.get("order_timestamp")))
+            })
+            
+        count = save_raw_executions(parsed_executions, "default")
+        return {"status": "success", "synced_count": count}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/broker/executions")
+async def get_raw_executions_endpoint():
+    try:
+        executions = get_raw_executions("default")
+        return {"executions": executions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+class CreateCampaignRequest(BaseModel):
+    ticker: str
+    execution_ids: list[int]
+
+@app.post("/api/campaigns")
+async def create_campaign(req: CreateCampaignRequest):
+    try:
+        from database import create_swing_campaign
+        campaign_id = create_swing_campaign("default", req.ticker, req.execution_ids)
+        return {"status": "success", "campaign_id": campaign_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/campaigns")
+async def get_campaigns_endpoint():
+    try:
+        from database import get_swing_campaigns
+        campaigns = get_swing_campaigns("default")
+        return {"campaigns": campaigns}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

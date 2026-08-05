@@ -2,6 +2,7 @@
 # BMAD core installation
 _bmad/
 _bmad-output/
+docs/
 
 # BMAD skills (installed into .agent/skills)
 .agent/skills/bmad-*/
@@ -19,3 +20,6 @@ __pycache__/
 
 # ─── Debug / scratch output ───────────────────────────────────────────────────
 ledger_debug.json
+
+# ─── Environment files ────────────────────────────────────────────────────────
+.env
