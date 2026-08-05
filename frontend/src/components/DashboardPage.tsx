@@ -5,6 +5,7 @@ export function DashboardPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [dailyPnl, setDailyPnl] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
+  const [dismissedWarning, setDismissedWarning] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -28,6 +29,18 @@ export function DashboardPage() {
     };
     fetchDashboardData();
   }, []);
+
+  // Check for Revenge Trade Warning
+  const mostRecentClosed = campaigns.find(c => c.status === 'closed');
+  let isRevengeRisk = false;
+  if (mostRecentClosed && mostRecentClosed.realized_pnl && mostRecentClosed.realized_pnl < 0) {
+    // Check if it was closed within the last 30 minutes (using created_at as proxy for updated_at for MVP)
+    const closedTime = new Date(mostRecentClosed.created_at).getTime();
+    const now = new Date().getTime();
+    if (now - closedTime < 30 * 60 * 1000) {
+      isRevengeRisk = true;
+    }
+  }
 
   // Calculate Capital at Risk (open campaigns only)
   const capitalAtRisk = campaigns
@@ -108,6 +121,27 @@ export function DashboardPage() {
 
   return (
     <div className="p-8 h-full overflow-auto bg-[#0D0D12]">
+      {isRevengeRisk && !dismissedWarning && (
+        <div className="mb-6 p-4 rounded-lg bg-red-900/30 border border-red-500/50 flex justify-between items-start">
+          <div className="flex gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 text-red-500 shrink-0">
+              <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+            </svg>
+            <div>
+              <h3 className="text-red-400 font-bold">Revenge Trade Risk Detected</h3>
+              <p className="text-sm text-red-200/80 mt-1">
+                You recently closed a campaign for a loss. Consider taking a 30-minute cool-down before opening new positions to avoid emotional trading.
+              </p>
+            </div>
+          </div>
+          <button onClick={() => setDismissedWarning(true)} className="text-red-400 hover:text-red-300">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      )}
+
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white tracking-tight">Risk Dashboard</h1>
         <p className="text-gray-400 mt-2">Confront your exposure and consistency.</p>

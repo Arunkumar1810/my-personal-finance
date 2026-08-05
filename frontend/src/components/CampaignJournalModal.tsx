@@ -16,6 +16,7 @@ export interface Campaign {
   rationale?: string;
   planned_risk?: number;
   planned_reward?: number;
+  ai_analysis?: string;
 }
 
 interface Props {
@@ -38,6 +39,27 @@ export function CampaignJournalModal({ campaign, onClose, onSave }: Props) {
   const [plannedReward, setPlannedReward] = useState(campaign.planned_reward || 0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const [aiAnalysis, setAiAnalysis] = useState(campaign.ai_analysis || '');
+  const [analyzing, setAnalyzing] = useState(false);
+
+  const handleGenerateAI = async () => {
+    try {
+      setAnalyzing(true);
+      setError(null);
+      const res = await fetch(`http://localhost:8000/api/campaigns/${campaign.id}/ai-analysis`, {
+        method: 'POST'
+      });
+      if (!res.ok) throw new Error('Failed to generate AI analysis');
+      const data = await res.json();
+      setAiAnalysis(data.ai_analysis);
+      // Since it's saved in the backend, no need to trigger onSave for this, but we show it
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   const handleSave = async () => {
     try {
@@ -182,6 +204,34 @@ export function CampaignJournalModal({ campaign, onClose, onSave }: Props) {
               className="w-full bg-black/20 border border-[#2C2C35] rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#FF5722] min-h-[150px] font-mono text-sm"
             />
           </div>
+          
+          {campaign.status === 'closed' && (
+            <div className="space-y-4 pt-4 border-t border-[#2C2C35]">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 text-purple-400">
+                    <path fillRule="evenodd" d="M14.615 1.595a.75.75 0 01.359.852L12.982 9.75h7.268a.75.75 0 01.548 1.262l-10.5 11.25a.75.75 0 01-1.272-.71l1.992-7.302H3.75a.75.75 0 01-.548-1.262l10.5-11.25a.75.75 0 01.913-.143z" clipRule="evenodd" />
+                  </svg>
+                  AI Coaching & Post-Mortem
+                </h3>
+                {!aiAnalysis && (
+                  <button
+                    onClick={handleGenerateAI}
+                    disabled={analyzing}
+                    className="px-4 py-1.5 bg-purple-600/20 hover:bg-purple-600/40 border border-purple-500/50 text-purple-300 font-medium rounded-lg transition-colors disabled:opacity-50 text-sm"
+                  >
+                    {analyzing ? 'Analyzing...' : 'Run AI Post-Mortem'}
+                  </button>
+                )}
+              </div>
+              
+              {aiAnalysis && (
+                <div className="bg-purple-900/10 border border-purple-500/30 rounded-lg p-4 font-mono text-sm text-purple-200/90 whitespace-pre-wrap">
+                  {aiAnalysis}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="p-6 border-t border-[#2C2C35] flex justify-end space-x-3 bg-[#2C2C35]/10">

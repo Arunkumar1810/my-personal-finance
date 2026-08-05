@@ -320,3 +320,28 @@ async def get_daily_pnl():
         return {"daily_pnl": daily_pnl}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/campaigns/{campaign_id}/ai-analysis")
+async def generate_campaign_ai_analysis(campaign_id: int):
+    try:
+        from database import get_swing_campaigns, update_swing_campaign
+        campaigns = get_swing_campaigns("default")
+        camp = next((c for c in campaigns if c["id"] == campaign_id), None)
+        if not camp:
+            raise HTTPException(status_code=404, detail="Campaign not found")
+        
+        # Mock LLM API call delay
+        await asyncio.sleep(2)
+        
+        # Mock analysis markdown
+        mock_analysis = f"""### AI Post-Mortem Critique
+Based on your rationale ("{camp.get('rationale', 'No rationale provided')}"), your timing was evaluated. The exit price of ₹{camp.get('exit_price', 0):.2f} was triggered. Emotional factors played a role.
+
+### Counter-Factual Scenarios
+- **Scenario A (Holding to Planned Target):** If you had held to the original target, your P/L would align better with the planned reward of ₹{camp.get('planned_reward') or 'N/A'}.
+- **Scenario B (Alternative Entry):** A slightly later entry could have reduced drawdown.
+"""
+        update_swing_campaign(campaign_id, ai_analysis=mock_analysis)
+        return {"ai_analysis": mock_analysis}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -85,7 +85,8 @@ def init_db():
         ("regret_metric", "INTEGER"),
         ("rationale", "TEXT"),
         ("planned_risk", "REAL"),
-        ("planned_reward", "REAL")
+        ("planned_reward", "REAL"),
+        ("ai_analysis", "TEXT")
     ]
     for col_name, col_type in new_columns:
         try:
@@ -256,7 +257,7 @@ def get_swing_campaigns(user_id="default"):
     cursor = conn.cursor()
     
     # Get campaigns
-    cursor.execute('SELECT id, ticker, status, created_at, strategy, sell_reason, emotion, regret_metric, rationale, planned_risk, planned_reward FROM swing_campaigns WHERE user_id = ? ORDER BY created_at DESC', (user_id,))
+    cursor.execute('SELECT id, ticker, status, created_at, strategy, sell_reason, emotion, regret_metric, rationale, planned_risk, planned_reward, ai_analysis FROM swing_campaigns WHERE user_id = ? ORDER BY created_at DESC', (user_id,))
     campaigns = [dict(row) for row in cursor.fetchall()]
     
     # Calculate aggregation
@@ -290,14 +291,28 @@ def get_swing_campaigns(user_id="default"):
     conn.close()
     return campaigns
 
-def update_swing_campaign(campaign_id, strategy=None, sell_reason=None, emotion=None, regret_metric=None, rationale=None, planned_risk=None, planned_reward=None):
+def update_swing_campaign(campaign_id, strategy=None, sell_reason=None, emotion=None, regret_metric=None, rationale=None, planned_risk=None, planned_reward=None, ai_analysis=None):
     conn = get_db_connection()
     cursor = conn.cursor()
+    
+    # We update all fields dynamically or just do a coalesced update. 
+    # For now, we update them if they are passed. Wait, the current implementation overwrites everything.
+    # We should probably only update ai_analysis if it's passed or just leave it as it was if we don't want to wipe it.
+    # To keep it simple without changing the existing logic too much, let's just make it a separate function to save ai analysis, or use coalesce.
+    
+    # Actually, the task says: Update the retrieval and update queries in database.py to include ai_analysis.
     cursor.execute('''
         UPDATE swing_campaigns
-        SET strategy = ?, sell_reason = ?, emotion = ?, regret_metric = ?, rationale = ?, planned_risk = ?, planned_reward = ?
+        SET strategy = COALESCE(?, strategy), 
+            sell_reason = COALESCE(?, sell_reason), 
+            emotion = COALESCE(?, emotion), 
+            regret_metric = COALESCE(?, regret_metric), 
+            rationale = COALESCE(?, rationale), 
+            planned_risk = COALESCE(?, planned_risk), 
+            planned_reward = COALESCE(?, planned_reward),
+            ai_analysis = COALESCE(?, ai_analysis)
         WHERE id = ?
-    ''', (strategy, sell_reason, emotion, regret_metric, rationale, planned_risk, planned_reward, campaign_id))
+    ''', (strategy, sell_reason, emotion, regret_metric, rationale, planned_risk, planned_reward, ai_analysis, campaign_id))
     conn.commit()
     conn.close()
 
