@@ -83,6 +83,70 @@ export function PortfolioValuation() {
   });
   currentTxs.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  // 1. Derived Data Computation
+  let totalDeposited = 0;
+  let totalWithdrawn = 0;
+  let portfolioStartDate: Date | null = null;
+  
+  if (data.transactions && data.transactions.length > 0) {
+    const ascTxs = [...data.transactions].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    portfolioStartDate = new Date(ascTxs[0].date);
+    for (const tx of data.transactions) {
+      if (tx.type === 'deposit') {
+        totalDeposited += Math.abs(tx.amount);
+      } else {
+        totalWithdrawn += Math.abs(tx.amount);
+      }
+    }
+  }
+
+  const netInvested = totalDeposited - totalWithdrawn;
+  const unrealisedGain = (data.current_value || 0) - netInvested;
+  const gainPct = netInvested !== 0 ? (unrealisedGain / netInvested) * 100 : 0;
+
+  const totalCapital = (data.current_value || 0) + (data.available_funds || 0);
+  const deployedPct = totalCapital > 0 ? (data.current_value / totalCapital) * 100 : 0;
+  const idlePct = totalCapital > 0 ? (data.available_funds / totalCapital) * 100 : 0;
+
+  let portfolioAgeStr = '';
+  if (portfolioStartDate) {
+    const now = new Date();
+    const diffMonths = (now.getFullYear() - portfolioStartDate.getFullYear()) * 12 + (now.getMonth() - portfolioStartDate.getMonth());
+    const years = Math.floor(diffMonths / 12);
+    const months = diffMonths % 12;
+    if (years > 0) {
+       portfolioAgeStr = `${years}y ${months}m`;
+    } else {
+       portfolioAgeStr = `${months}m`;
+    }
+  }
+
+  // Monthly Cash Flow Chart Data
+  const monthlyDataMap = new Map<string, { deposits: number, withdrawals: number, label: string }>();
+  if (data.transactions) {
+     const ascTxs = [...data.transactions].sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+     ascTxs.forEach((tx: any) => {
+        const d = new Date(tx.date);
+        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2, '0')}`;
+        if (!monthlyDataMap.has(key)) {
+           monthlyDataMap.set(key, { 
+             deposits: 0, 
+             withdrawals: 0, 
+             label: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) 
+           });
+        }
+        if (tx.type === 'deposit') {
+           monthlyDataMap.get(key)!.deposits += Math.abs(tx.amount);
+        } else {
+           monthlyDataMap.get(key)!.withdrawals += Math.abs(tx.amount);
+        }
+     });
+  }
+  const monthlyData = Array.from(monthlyDataMap.values());
+  const maxMonthlyVal = monthlyData.length > 0 
+    ? Math.max(...monthlyData.map(m => Math.max(m.deposits, m.withdrawals)))
+    : 0;
+
   return (
     <div className="bg-[#16161D] border border-neutral-700 rounded p-6 mb-8 text-white">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
@@ -117,6 +181,63 @@ export function PortfolioValuation() {
         </div>
       </div>
 
+      {/* Capital Story Card & Portfolio Tenure */}
+      <div className="mt-8 bg-[#0D0D12] border border-neutral-700 rounded p-5">
+        <div className="flex justify-between items-center mb-4 border-b border-neutral-700 pb-2">
+          <h3 className="text-lg font-semibold text-neutral-300">Capital Story</h3>
+          {portfolioStartDate && (
+            <span className="text-xs text-neutral-500 bg-[#16161D] px-2 py-1 rounded border border-neutral-700">
+              Since {portfolioStartDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} &bull; {portfolioAgeStr}
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+          <div>
+            <div className="text-neutral-500 mb-1">Total Deposited</div>
+            <div className="font-mono">₹{totalDeposited.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+          </div>
+          <div>
+            <div className="text-neutral-500 mb-1">Total Withdrawn</div>
+            <div className="font-mono">₹{totalWithdrawn.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+          </div>
+          <div>
+            <div className="text-neutral-500 mb-1">Net Invested</div>
+            <div className="font-mono">₹{netInvested.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+          </div>
+          <div>
+            <div className="text-neutral-500 mb-1">Unrealised Gain</div>
+            <div className={`font-mono ${unrealisedGain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {unrealisedGain >= 0 ? '+' : '-'}₹{Math.abs(unrealisedGain).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+            </div>
+          </div>
+          <div>
+            <div className="text-neutral-500 mb-1">Gain %</div>
+            <div className={`font-mono ${unrealisedGain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+              {unrealisedGain >= 0 ? '+' : ''}{gainPct.toFixed(2)}%
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Capital Efficiency Bar */}
+      <div className="mt-8">
+         <h3 className="text-lg font-semibold mb-3 border-b border-neutral-700 pb-2">Capital Efficiency</h3>
+         <div className="h-4 w-full bg-neutral-800 rounded-full overflow-hidden flex">
+            <div className="bg-indigo-500 h-full transition-all duration-1000" style={{ width: `${totalCapital === 0 ? 0 : deployedPct}%` }}></div>
+            <div className="bg-neutral-600 h-full transition-all duration-1000" style={{ width: `${totalCapital === 0 ? 100 : idlePct}%` }}></div>
+         </div>
+         <div className="flex justify-between mt-2 text-xs">
+            <div>
+               <span className="text-indigo-400 font-semibold">In Market</span>
+               <span className="text-neutral-400 ml-2">₹{(data.current_value || 0).toLocaleString()} ({deployedPct.toFixed(1)}%)</span>
+            </div>
+            <div className="text-right">
+               <span className="text-neutral-400 mr-2">₹{(data.available_funds || 0).toLocaleString()} ({idlePct.toFixed(1)}%)</span>
+               <span className="text-neutral-500 font-semibold">Idle Cash</span>
+            </div>
+         </div>
+      </div>
+
       <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
         <div>
           <h3 className="text-lg font-semibold mb-3 border-b border-neutral-700 pb-2">Wealth Velocity</h3>
@@ -130,6 +251,82 @@ export function PortfolioValuation() {
             <GhostXIRR xirr={displayXirr || 0} />
           </div>
         </div>
+      </div>
+
+      {/* Monthly Cash Flow Chart */}
+      <div className="mt-8">
+        <h3 className="text-lg font-semibold mb-3 border-b border-neutral-700 pb-2">Monthly Cash Flow</h3>
+        {monthlyData.length === 0 ? (
+          <div className="text-center text-neutral-500 py-8 bg-[#0D0D12] border border-neutral-700 rounded">
+            No cash flow data yet.
+          </div>
+        ) : (
+          <div className="bg-[#0D0D12] border border-neutral-700 rounded p-4 overflow-x-auto">
+             <div className="min-w-[500px]" style={{ height: '200px' }}>
+                <svg width="100%" height="100%" preserveAspectRatio="none">
+                   {/* Y-axis grids */}
+                   {[0, 0.25, 0.5, 0.75, 1].map(pct => {
+                      const y = 20 + (1 - pct) * 150;
+                      return (
+                         <g key={pct}>
+                            <line x1="0" y1={y} x2="100%" y2={y} stroke="#2C2C35" strokeDasharray="4 4" />
+                            <text x="0" y={y - 4} fontSize="10" fill="#6b7280">
+                               ₹{((maxMonthlyVal * pct) / 1000).toFixed(0)}k
+                            </text>
+                         </g>
+                      );
+                   })}
+                   
+                   {/* Bars */}
+                   {monthlyData.map((m, i) => {
+                      const totalWidth = 100 / monthlyData.length;
+                      const xCenter = (i + 0.5) * totalWidth;
+                      const barWidth = Math.min(4, totalWidth * 0.3); // max 4% width
+                      
+                      const depH = maxMonthlyVal > 0 ? (m.deposits / maxMonthlyVal) * 150 : 0;
+                      const witH = maxMonthlyVal > 0 ? (m.withdrawals / maxMonthlyVal) * 150 : 0;
+                      
+                      return (
+                         <g key={i}>
+                            {/* Deposit bar */}
+                            <rect 
+                               x={`${xCenter - barWidth}%`} 
+                               y={170 - depH} 
+                               width={`${barWidth}%`} 
+                               height={depH} 
+                               fill="#34d399" 
+                               rx="2"
+                            />
+                            {/* Withdrawal bar */}
+                            <rect 
+                               x={`${xCenter}%`} 
+                               y={170 - witH} 
+                               width={`${barWidth}%`} 
+                               height={witH} 
+                               fill="#fb923c" 
+                               rx="2"
+                            />
+                            {/* X-axis label */}
+                            <text 
+                               x={`${xCenter}%`} 
+                               y="190" 
+                               textAnchor="middle" 
+                               fontSize="10" 
+                               fill="#9ca3af"
+                            >
+                               {m.label}
+                            </text>
+                         </g>
+                      );
+                   })}
+                </svg>
+             </div>
+             <div className="flex justify-center mt-2 space-x-6 text-xs text-neutral-400">
+                <div className="flex items-center"><span className="w-3 h-3 bg-green-400 rounded-sm mr-2"></span>Deposits</div>
+                <div className="flex items-center"><span className="w-3 h-3 bg-orange-400 rounded-sm mr-2"></span>Withdrawals</div>
+             </div>
+          </div>
+        )}
       </div>
 
       <div className="mt-8">

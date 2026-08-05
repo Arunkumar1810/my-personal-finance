@@ -1,22 +1,4 @@
-## Purpose
-TBD
-
-## Requirements
-
-### Requirement: Enhanced Portfolio Valuation View
-The existing Portfolio Valuation view SHALL be enhanced to include XIRR, Wealth Velocity, Ghost XIRR, and a transaction ledger. It MUST also include a mechanism to fetch transactions from Zerodha Console via an on-demand credential popup.
-
-#### Scenario: User views Portfolio Valuation
-- **WHEN** the user navigates to the Portfolio Valuation view
-- **THEN** they see the current Portfolio Value and Available Funds fetched from Kite
-- **AND** they see the calculated XIRR, a Wealth Velocity indicator, and a Ghost XIRR trendline based on transactions cached in the local SQLite database
-- **AND** they see a "water drop" styled visual ledger of historical cash flows (deposits/withdrawals) within the same view.
-
-#### Scenario: User requests transaction refresh
-- **WHEN** the user clicks a "Refresh Transactions" button
-- **THEN** a popup prompts them for their Zerodha User ID, Password, and TOTP
-- **AND** upon submission, the frontend calls the backend to fetch new data from the Console API
-- **AND** upon success, the Portfolio Valuation view updates the transaction ledger and recalculates XIRR with the newly cached data.
+## ADDED Requirements
 
 ### Requirement: Capital Story Card
 The system SHALL display a Capital Story Card on the Portfolio Valuation tab that aggregates transaction history into a summarised capital narrative. The card SHALL show: Total Deposited (sum of all deposit transactions), Total Withdrawn (sum of all withdrawal transactions), Net Invested (deposits minus withdrawals), Unrealised Gain/Loss in absolute rupee terms (current_value minus net invested), and Gain % (unrealised gain divided by net invested, expressed as a percentage). Gain values SHALL be coloured green when positive and red when negative.
@@ -37,6 +19,8 @@ The system SHALL display a Capital Story Card on the Portfolio Valuation tab tha
 - **WHEN** the user has both deposit and withdrawal transactions
 - **THEN** Net Invested equals total deposits minus total withdrawals
 
+---
+
 ### Requirement: Capital Efficiency Bar
 The system SHALL display a horizontal bar showing the ratio of capital currently deployed in the market (current_value) versus idle available funds (available_funds). The bar SHALL show two segments labelled "In Market" and "Idle Cash" with their respective rupee amounts and percentages. The total SHALL be the sum of current_value and available_funds.
 
@@ -51,6 +35,8 @@ The system SHALL display a horizontal bar showing the ratio of capital currently
 #### Scenario: No portfolio value
 - **WHEN** current_value is zero
 - **THEN** the bar shows Idle segment filling full width
+
+---
 
 ### Requirement: Monthly Cash Flow Bar Chart
 The system SHALL display a grouped bar chart above the Cash Flow Ledger table that visualises monthly deposit and withdrawal totals. Each month SHALL show two bars: one for total deposits and one for total withdrawals in that calendar month. The chart SHALL use inline SVG consistent with existing WealthVelocity and GhostXIRR chart components. The X-axis SHALL show month labels (e.g., "Jan 25"). The Y-axis SHALL scale to the maximum monthly value.
@@ -71,6 +57,8 @@ The system SHALL display a grouped bar chart above the Cash Flow Ledger table th
 - **WHEN** all transactions fall within the same calendar month
 - **THEN** the chart shows a single grouped bar pair for that month
 
+---
+
 ### Requirement: Portfolio Tenure Badge
 The system SHALL display a portfolio tenure badge showing the date the portfolio was started (oldest transaction date) and the elapsed time since then in years and months.
 
@@ -85,6 +73,8 @@ The system SHALL display a portfolio tenure badge showing the date the portfolio
 #### Scenario: No transactions
 - **WHEN** the transactions array is empty
 - **THEN** the tenure badge is not rendered
+
+## MODIFIED Requirements
 
 ### Requirement: Portfolio Valuation View Layout
 The portfolio valuation tab layout SHALL be updated to include the four new sections (Capital Story Card, Capital Efficiency Bar, Monthly Cash Flow Chart, Portfolio Tenure Badge) in addition to the existing KPI row, Wealth Velocity, XIRR Projection, and Cash Flow Ledger. The section order from top to bottom SHALL be: (1) KPI row, (2) Capital Story Card with Portfolio Tenure Badge, (3) Capital Efficiency Bar, (4) Wealth Velocity and XIRR Projection charts, (5) Monthly Cash Flow Bar Chart, (6) Cash Flow Ledger table.
