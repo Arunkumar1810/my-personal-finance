@@ -283,6 +283,8 @@ class UpdateCampaignRequest(BaseModel):
     emotion: str | None = None
     regret_metric: int | None = None
     rationale: str | None = None
+    planned_risk: float | None = None
+    planned_reward: float | None = None
 
 @app.patch("/api/campaigns/{campaign_id}")
 async def patch_campaign(campaign_id: int, req: UpdateCampaignRequest):
@@ -294,8 +296,27 @@ async def patch_campaign(campaign_id: int, req: UpdateCampaignRequest):
             sell_reason=req.sell_reason, 
             emotion=req.emotion, 
             regret_metric=req.regret_metric, 
-            rationale=req.rationale
+            rationale=req.rationale,
+            planned_risk=req.planned_risk,
+            planned_reward=req.planned_reward
         )
         return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/dashboard/daily-pnl")
+async def get_daily_pnl():
+    try:
+        from database import get_swing_campaigns
+        campaigns = get_swing_campaigns("default")
+        daily_pnl = {}
+        for camp in campaigns:
+            if camp["status"] == "closed":
+                # Extract date string like 'YYYY-MM-DD'
+                # Assuming created_at is updated on close, or we just use created_at for MVP
+                date_str = camp["created_at"].split(" ")[0]
+                pnl = camp.get("realized_pnl", 0)
+                daily_pnl[date_str] = daily_pnl.get(date_str, 0) + pnl
+        return {"daily_pnl": daily_pnl}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

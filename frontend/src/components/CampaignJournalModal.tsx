@@ -14,6 +14,8 @@ export interface Campaign {
   emotion?: string;
   regret_metric?: number;
   rationale?: string;
+  planned_risk?: number;
+  planned_reward?: number;
 }
 
 interface Props {
@@ -32,6 +34,8 @@ export function CampaignJournalModal({ campaign, onClose, onSave }: Props) {
   const [emotion, setEmotion] = useState(campaign.emotion || '');
   const [regretMetric, setRegretMetric] = useState(campaign.regret_metric || 1);
   const [rationale, setRationale] = useState(campaign.rationale || '');
+  const [plannedRisk, setPlannedRisk] = useState(campaign.planned_risk || 0);
+  const [plannedReward, setPlannedReward] = useState(campaign.planned_reward || 0);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -48,6 +52,8 @@ export function CampaignJournalModal({ campaign, onClose, onSave }: Props) {
           emotion: emotion || null,
           regret_metric: regretMetric,
           rationale: rationale || null,
+          planned_risk: plannedRisk || null,
+          planned_reward: plannedReward || null,
         })
       });
       if (!res.ok) throw new Error('Failed to save journal entry');
@@ -137,6 +143,30 @@ export function CampaignJournalModal({ campaign, onClose, onSave }: Props) {
                 <span>1 - None</span>
                 <span>5 - High Regret</span>
               </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-300">Planned Risk (₹)</label>
+              <input 
+                type="number" 
+                value={plannedRisk || ''}
+                onChange={(e) => setPlannedRisk(parseFloat(e.target.value) || 0)}
+                className="w-full bg-black/20 border border-[#2C2C35] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#FF5722]"
+                placeholder="0.00"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-300">Planned Reward (₹)</label>
+              <input 
+                type="number" 
+                value={plannedReward || ''}
+                onChange={(e) => setPlannedReward(parseFloat(e.target.value) || 0)}
+                className="w-full bg-black/20 border border-[#2C2C35] rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-[#FF5722]"
+                placeholder="0.00"
+              />
             </div>
           </div>
 

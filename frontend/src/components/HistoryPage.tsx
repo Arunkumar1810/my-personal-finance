@@ -220,17 +220,18 @@ export function HistoryPage() {
                     <th className="px-6 py-3 font-medium text-gray-400 text-right">Avg Entry</th>
                     <th className="px-6 py-3 font-medium text-gray-400 text-right">Avg Exit</th>
                     <th className="px-6 py-3 font-medium text-gray-400 text-right">Realized P/L</th>
+                    <th className="px-6 py-3 font-medium text-gray-400 text-right">R/R (Plan vs Act)</th>
                     <th className="px-6 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#2C2C35]">
                   {loading ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">Loading campaigns...</td>
+                      <td colSpan={8} className="px-6 py-8 text-center text-gray-500">Loading campaigns...</td>
                     </tr>
                   ) : campaigns.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No campaigns created yet. Group some raw executions!</td>
+                      <td colSpan={8} className="px-6 py-8 text-center text-gray-500">No campaigns created yet. Group some raw executions!</td>
                     </tr>
                   ) : (
                     campaigns.map(camp => (
@@ -257,6 +258,24 @@ export function HistoryPage() {
                         <td className="px-6 py-4 text-right text-gray-300">₹{camp.exit_price.toFixed(2)}</td>
                         <td className={`px-6 py-4 text-right font-medium ${camp.realized_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                           {camp.realized_pnl >= 0 ? '+' : ''}₹{camp.realized_pnl.toFixed(2)}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <div className="flex flex-col items-end">
+                            {camp.planned_risk && camp.planned_reward ? (
+                              <>
+                                <span className="text-xs text-gray-400">Plan: 1:{(camp.planned_reward / camp.planned_risk).toFixed(1)}</span>
+                                <span className={`text-xs font-medium ${
+                                  camp.realized_pnl > 0 
+                                    ? (camp.realized_pnl / camp.planned_risk) >= (camp.planned_reward / camp.planned_risk) * 0.8 ? 'text-green-400' : 'text-orange-400'
+                                    : 'text-red-400'
+                                }`}>
+                                  Act: {camp.realized_pnl > 0 ? '1:' : '-1:'}{Math.abs(camp.realized_pnl / camp.planned_risk).toFixed(1)}
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-xs text-gray-600">-</span>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button 

@@ -9,6 +9,7 @@ import { Settings } from './components/Settings'
 import { PortfolioValuation } from './components/PortfolioValuation'
 
 import { HistoryPage } from './components/HistoryPage'
+import { DashboardPage } from './components/DashboardPage'
 function App() {
   return (
     <FallbackProvider>
@@ -18,6 +19,7 @@ function App() {
             <Route index element={<ActiveTradesPage />} />
             <Route path="watchlist" element={<WatchlistQueue />} />
             <Route path="history" element={<HistoryPage />} />
+            <Route path="dashboard" element={<DashboardPage />} />
             <Route path="valuation" element={<div className="p-8 h-full bg-[#0D0D12] overflow-auto"><PortfolioValuation /></div>} />
             <Route path="settings" element={<Settings />} />
           </Route>
