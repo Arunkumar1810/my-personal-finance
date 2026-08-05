@@ -1,5 +1,5 @@
 from typing import Any, Dict, List
-from .i_kite_adapter import IKiteAdapter
+from i_kite_adapter import IKiteAdapter
 
 class DevModeKiteAdapter(IKiteAdapter):
     """
@@ -85,3 +85,21 @@ class DevModeKiteAdapter(IKiteAdapter):
             }
             for i in range(1, 16)
         ]
+
+    def margins(self) -> Dict[str, Any]:
+        return {
+            "equity": {
+                "available": {
+                    "cash": 150000.0
+                },
+                "net": 150000.0
+            }
+        }
+
+    def get_cash_transactions(self) -> List[Dict[str, Any]]:
+        return [
+            {"date": "2023-01-10T00:00:00+0530", "amount": 100000.0, "type": "deposit"},
+            {"date": "2023-05-15T00:00:00+0530", "amount": -20000.0, "type": "withdrawal"},
+            {"date": "2023-08-20T00:00:00+0530", "amount": 50000.0, "type": "deposit"}
+        ]
+

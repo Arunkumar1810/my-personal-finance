@@ -37,3 +37,28 @@ class KiteServiceClient:
             if cached is not None:
                 return {"holdings": cached, "fallback": True}
             return None
+
+    def get_margins(self):
+        request = holdings_pb2.MarginsRequest()
+        try:
+            response = cb.call(self.stub.GetMargins, request, timeout=5.0)
+            return {"available_cash": response.available_cash}
+        except (grpc.RpcError, CircuitBreakerOpenException) as e:
+            print(f"gRPC call GetMargins failed: {e}")
+            return {"available_cash": 0.0}
+
+    def get_cash_transactions(self):
+        request = holdings_pb2.CashTransactionsRequest()
+        try:
+            response = cb.call(self.stub.GetCashTransactions, request, timeout=5.0)
+            transactions = []
+            for tx in response.transactions:
+                transactions.append({
+                    "date": tx.date,
+                    "amount": tx.amount,
+                    "type": tx.type
+                })
+            return {"transactions": transactions}
+        except (grpc.RpcError, CircuitBreakerOpenException) as e:
+            print(f"gRPC call GetCashTransactions failed: {e}")
+            return {"transactions": []}

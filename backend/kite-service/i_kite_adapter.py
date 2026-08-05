@@ -22,3 +22,12 @@ class IKiteAdapter(ABC):
     @abstractmethod
     def historical_data(self, instrument_token: int, from_date: str, to_date: str, interval: str) -> List[Dict[str, Any]]:
         pass
+
+    @abstractmethod
+    def margins(self) -> Dict[str, Any]:
+        pass
+
+    @abstractmethod
+    def get_cash_transactions(self) -> List[Dict[str, Any]]:
+        pass
+

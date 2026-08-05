@@ -1,7 +1,7 @@
 from fastapi import Request, HTTPException
-from .i_kite_adapter import IKiteAdapter
-from .dev_adapter import DevModeKiteAdapter
-from .production_adapter import ProductionKiteAdapter
+from i_kite_adapter import IKiteAdapter
+from dev_adapter import DevModeKiteAdapter
+from production_adapter import ProductionKiteAdapter
 from kite_client import authenticate_kite
 
 def get_kite_adapter(request: Request) -> IKiteAdapter:

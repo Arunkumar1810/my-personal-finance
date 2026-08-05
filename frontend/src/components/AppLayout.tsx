@@ -43,6 +43,17 @@ export function AppLayout() {
           >
             History
           </NavLink>
+          
+          <NavLink
+            to="/valuation"
+            className={({ isActive }) =>
+              `block px-4 py-3 rounded-lg transition-colors duration-200 ${
+                isActive ? 'bg-[#2C2C35] text-white' : 'text-gray-400 hover:bg-[#2C2C35] hover:text-white'
+              }`
+            }
+          >
+            Portfolio Valuation
+          </NavLink>
 
           <NavLink
             to="/settings"

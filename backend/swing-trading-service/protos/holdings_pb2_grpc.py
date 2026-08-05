@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-from protos import holdings_pb2 as protos_dot_holdings__pb2
+from . import holdings_pb2 as holdings__pb2
 
 GRPC_GENERATED_VERSION = '1.83.0'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in protos/holdings_pb2_grpc.py depends on'
+        + ' but the generated code in holdings_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -36,18 +36,33 @@ class KiteServiceStub:
         """
         self.GetHoldings = channel.unary_unary(
                 '/holdings.KiteService/GetHoldings',
-                request_serializer=protos_dot_holdings__pb2.HoldingsRequest.SerializeToString,
-                response_deserializer=protos_dot_holdings__pb2.HoldingsResponse.FromString,
+                request_serializer=holdings__pb2.HoldingsRequest.SerializeToString,
+                response_deserializer=holdings__pb2.HoldingsResponse.FromString,
                 _registered_method=True)
         self.StreamLiveTicks = channel.unary_stream(
                 '/holdings.KiteService/StreamLiveTicks',
-                request_serializer=protos_dot_holdings__pb2.LiveTicksRequest.SerializeToString,
-                response_deserializer=protos_dot_holdings__pb2.LiveTick.FromString,
+                request_serializer=holdings__pb2.LiveTicksRequest.SerializeToString,
+                response_deserializer=holdings__pb2.LiveTick.FromString,
                 _registered_method=True)
         self.StreamUnifiedUpdates = channel.unary_stream(
                 '/holdings.KiteService/StreamUnifiedUpdates',
-                request_serializer=protos_dot_holdings__pb2.UnifiedUpdateRequest.SerializeToString,
-                response_deserializer=protos_dot_holdings__pb2.UnifiedUpdate.FromString,
+                request_serializer=holdings__pb2.UnifiedUpdateRequest.SerializeToString,
+                response_deserializer=holdings__pb2.UnifiedUpdate.FromString,
+                _registered_method=True)
+        self.GetMargins = channel.unary_unary(
+                '/holdings.KiteService/GetMargins',
+                request_serializer=holdings__pb2.MarginsRequest.SerializeToString,
+                response_deserializer=holdings__pb2.MarginsResponse.FromString,
+                _registered_method=True)
+        self.GetCashTransactions = channel.unary_unary(
+                '/holdings.KiteService/GetCashTransactions',
+                request_serializer=holdings__pb2.CashTransactionsRequest.SerializeToString,
+                response_deserializer=holdings__pb2.CashTransactionsResponse.FromString,
+                _registered_method=True)
+        self.GetPortfolioValuation = channel.unary_unary(
+                '/holdings.KiteService/GetPortfolioValuation',
+                request_serializer=holdings__pb2.PortfolioValuationRequest.SerializeToString,
+                response_deserializer=holdings__pb2.PortfolioValuationResponse.FromString,
                 _registered_method=True)
 
 
@@ -72,23 +87,56 @@ class KiteServiceServicer:
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def GetMargins(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetCashTransactions(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def GetPortfolioValuation(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_KiteServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'GetHoldings': grpc.unary_unary_rpc_method_handler(
                     servicer.GetHoldings,
-                    request_deserializer=protos_dot_holdings__pb2.HoldingsRequest.FromString,
-                    response_serializer=protos_dot_holdings__pb2.HoldingsResponse.SerializeToString,
+                    request_deserializer=holdings__pb2.HoldingsRequest.FromString,
+                    response_serializer=holdings__pb2.HoldingsResponse.SerializeToString,
             ),
             'StreamLiveTicks': grpc.unary_stream_rpc_method_handler(
                     servicer.StreamLiveTicks,
-                    request_deserializer=protos_dot_holdings__pb2.LiveTicksRequest.FromString,
-                    response_serializer=protos_dot_holdings__pb2.LiveTick.SerializeToString,
+                    request_deserializer=holdings__pb2.LiveTicksRequest.FromString,
+                    response_serializer=holdings__pb2.LiveTick.SerializeToString,
             ),
             'StreamUnifiedUpdates': grpc.unary_stream_rpc_method_handler(
                     servicer.StreamUnifiedUpdates,
-                    request_deserializer=protos_dot_holdings__pb2.UnifiedUpdateRequest.FromString,
-                    response_serializer=protos_dot_holdings__pb2.UnifiedUpdate.SerializeToString,
+                    request_deserializer=holdings__pb2.UnifiedUpdateRequest.FromString,
+                    response_serializer=holdings__pb2.UnifiedUpdate.SerializeToString,
+            ),
+            'GetMargins': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetMargins,
+                    request_deserializer=holdings__pb2.MarginsRequest.FromString,
+                    response_serializer=holdings__pb2.MarginsResponse.SerializeToString,
+            ),
+            'GetCashTransactions': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetCashTransactions,
+                    request_deserializer=holdings__pb2.CashTransactionsRequest.FromString,
+                    response_serializer=holdings__pb2.CashTransactionsResponse.SerializeToString,
+            ),
+            'GetPortfolioValuation': grpc.unary_unary_rpc_method_handler(
+                    servicer.GetPortfolioValuation,
+                    request_deserializer=holdings__pb2.PortfolioValuationRequest.FromString,
+                    response_serializer=holdings__pb2.PortfolioValuationResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -116,8 +164,8 @@ class KiteService:
             request,
             target,
             '/holdings.KiteService/GetHoldings',
-            protos_dot_holdings__pb2.HoldingsRequest.SerializeToString,
-            protos_dot_holdings__pb2.HoldingsResponse.FromString,
+            holdings__pb2.HoldingsRequest.SerializeToString,
+            holdings__pb2.HoldingsResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -143,8 +191,8 @@ class KiteService:
             request,
             target,
             '/holdings.KiteService/StreamLiveTicks',
-            protos_dot_holdings__pb2.LiveTicksRequest.SerializeToString,
-            protos_dot_holdings__pb2.LiveTick.FromString,
+            holdings__pb2.LiveTicksRequest.SerializeToString,
+            holdings__pb2.LiveTick.FromString,
             options,
             channel_credentials,
             insecure,
@@ -170,8 +218,89 @@ class KiteService:
             request,
             target,
             '/holdings.KiteService/StreamUnifiedUpdates',
-            protos_dot_holdings__pb2.UnifiedUpdateRequest.SerializeToString,
-            protos_dot_holdings__pb2.UnifiedUpdate.FromString,
+            holdings__pb2.UnifiedUpdateRequest.SerializeToString,
+            holdings__pb2.UnifiedUpdate.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetMargins(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/holdings.KiteService/GetMargins',
+            holdings__pb2.MarginsRequest.SerializeToString,
+            holdings__pb2.MarginsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetCashTransactions(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/holdings.KiteService/GetCashTransactions',
+            holdings__pb2.CashTransactionsRequest.SerializeToString,
+            holdings__pb2.CashTransactionsResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def GetPortfolioValuation(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/holdings.KiteService/GetPortfolioValuation',
+            holdings__pb2.PortfolioValuationRequest.SerializeToString,
+            holdings__pb2.PortfolioValuationResponse.FromString,
             options,
             channel_credentials,
             insecure,

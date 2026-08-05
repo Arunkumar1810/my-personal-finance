@@ -13,6 +13,8 @@ from protos import holdings_pb2, holdings_pb2_grpc
 from kite_client import get_kite_login_url, authenticate_kite
 from tick_consumer import consume_ticks, consume_unified_updates
 from connection_manager import manager
+from database import get_transactions, save_transaction
+from pydantic import BaseModel
 
 
 
@@ -30,7 +32,7 @@ app = FastAPI(title="Monolith API Gateway", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -96,4 +98,51 @@ async def get_holdings():
             raise HTTPException(status_code=504, detail="Gateway Timeout: Swing-Trading Service took too long to respond.")
         # Catch other errors
         raise HTTPException(status_code=502, detail=f"Bad Gateway: {e.details()}")
+
+class TransactionCreate(BaseModel):
+    date: str
+    amount: float
+    type: str
+
+@app.get("/api/portfolio-valuation")
+async def get_portfolio_valuation():
+    stub = get_grpc_stub()
+    request = holdings_pb2.PortfolioValuationRequest()
+    
+    try:
+        response = stub.GetPortfolioValuation(request, timeout=5.0)
+        transactions = []
+        for tx in response.transactions:
+            transactions.append({
+                "date": tx.date,
+                "amount": tx.amount,
+                "type": tx.type
+            })
+            
+        return {
+            "current_value": response.current_value,
+            "available_funds": response.available_funds,
+            "xirr": response.xirr,
+            "transactions": transactions
+        }
+    except grpc.RpcError as e:
+        if e.code() == grpc.StatusCode.DEADLINE_EXCEEDED:
+            raise HTTPException(status_code=504, detail="Gateway Timeout: Swing-Trading Service took too long to respond.")
+        raise HTTPException(status_code=502, detail=f"Bad Gateway: {e.details()}")
+
+@app.get("/api/transactions")
+async def get_transactions_endpoint():
+    try:
+        transactions = get_transactions()
+        return {"transactions": transactions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/transactions")
+async def create_transaction(tx: TransactionCreate):
+    try:
+        save_transaction(tx.date, tx.amount, tx.type)
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 

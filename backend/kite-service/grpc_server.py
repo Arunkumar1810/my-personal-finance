@@ -10,7 +10,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'swing-trading-service'))
 from protos import holdings_pb2, holdings_pb2_grpc
-from .factory import get_kite_adapter
+from factory import get_kite_adapter
 
 class DummyRequest:
     class Headers:
@@ -58,6 +58,35 @@ class KiteServiceServicer(holdings_pb2_grpc.KiteServiceServicer):
             context.set_code(grpc.StatusCode.INTERNAL)
             context.set_details(str(e))
             return holdings_pb2.HoldingsResponse()
+
+    def GetMargins(self, request, context):
+        try:
+            margins = self.adapter.margins()
+            available_cash = margins.get("equity", {}).get("available", {}).get("cash", 0.0)
+            return holdings_pb2.MarginsResponse(available_cash=float(available_cash))
+        except Exception as e:
+            print(f"Error in GetMargins: {e}")
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return holdings_pb2.MarginsResponse()
+
+    def GetCashTransactions(self, request, context):
+        try:
+            transactions = self.adapter.get_cash_transactions()
+            response = holdings_pb2.CashTransactionsResponse()
+            for tx in transactions:
+                tx_msg = holdings_pb2.CashTransaction(
+                    date=str(tx.get("date", "")),
+                    amount=float(tx.get("amount", 0.0)),
+                    type=str(tx.get("type", ""))
+                )
+                response.transactions.append(tx_msg)
+            return response
+        except Exception as e:
+            print(f"Error in GetCashTransactions: {e}")
+            context.set_code(grpc.StatusCode.INTERNAL)
+            context.set_details(str(e))
+            return holdings_pb2.CashTransactionsResponse()
 
     def StreamLiveTicks(self, request, context):
         while context.is_active():

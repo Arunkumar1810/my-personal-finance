@@ -6,7 +6,7 @@ from gtt_cache import set_cached_gtt_orders
 from atr_cache import set_cached_atr
 from datetime import datetime, timedelta
 
-TOKEN_CACHE_FILE = ".kite_access_token"
+TOKEN_CACHE_FILE = os.path.join(os.path.dirname(__file__), ".kite_access_token")
 
 def save_access_token(token):
     try:

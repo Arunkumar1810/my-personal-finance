@@ -6,7 +6,38 @@ service KiteService {
   rpc GetHoldings(HoldingsRequest) returns (HoldingsResponse);
   rpc StreamLiveTicks(LiveTicksRequest) returns (stream LiveTick);
   rpc StreamUnifiedUpdates(UnifiedUpdateRequest) returns (stream UnifiedUpdate);
+  rpc GetMargins(MarginsRequest) returns (MarginsResponse);
+  rpc GetCashTransactions(CashTransactionsRequest) returns (CashTransactionsResponse);
+  rpc GetPortfolioValuation(PortfolioValuationRequest) returns (PortfolioValuationResponse);
 }
+
+message PortfolioValuationRequest {}
+
+message PortfolioValuationResponse {
+  double current_value = 1;
+  double available_funds = 2;
+  double xirr = 3;
+  repeated CashTransaction transactions = 4;
+}
+
+message MarginsRequest {}
+
+message MarginsResponse {
+  double available_cash = 1;
+}
+
+message CashTransactionsRequest {}
+
+message CashTransaction {
+  string date = 1;
+  double amount = 2;
+  string type = 3;
+}
+
+message CashTransactionsResponse {
+  repeated CashTransaction transactions = 1;
+}
+
 
 message UnifiedUpdateRequest {
 }

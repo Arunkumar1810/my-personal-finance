@@ -23,7 +23,16 @@ export function Settings() {
       // Assuming Vite proxy is set up or monolith is on :8000
       const response = await fetch('http://localhost:8000/api/auth/login-url');
       if (!response.ok) {
-        throw new Error('Failed to fetch login URL');
+        let errMsg = 'Failed to fetch login URL';
+        try {
+          const errData = await response.json();
+          if (errData && errData.detail) {
+            errMsg = errData.detail;
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+        throw new Error(errMsg);
       }
       const data = await response.json();
       if (data.url) {

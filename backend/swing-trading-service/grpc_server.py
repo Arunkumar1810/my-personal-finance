@@ -5,6 +5,8 @@ from concurrent import futures
 import queue
 from protos import holdings_pb2, holdings_pb2_grpc
 from kite_service_client import KiteServiceClient
+from xirr_calc import calculate_xirr
+import datetime
 
 # A global list/set of active stream queues to route ticks to clients
 active_tick_streams = []
@@ -33,6 +35,55 @@ class SwingTradingServiceServicer(holdings_pb2_grpc.KiteServiceServicer):
                 pnl=h.get("pnl", 0.0)
             )
             response.holdings.append(holding_msg)
+        return response
+
+    def GetPortfolioValuation(self, request, context):
+        holdings_res = self.kite_client.get_holdings()
+        margins_res = self.kite_client.get_margins()
+        tx_res = self.kite_client.get_cash_transactions()
+        
+        current_value = 0.0
+        if holdings_res and not holdings_res.get("fallback", False):
+            for h in holdings_res["holdings"]:
+                current_value += h.get("quantity", 0) * h.get("last_price", 0.0)
+                
+        available_funds = margins_res.get("available_cash", 0.0)
+        
+        # Calculate XIRR
+        transactions = tx_res.get("transactions", [])
+        
+        # To calculate true XIRR, we add the current portfolio value as a final withdrawal (positive cash flow for the user)
+        xirr_flows = list(transactions)
+        if current_value + available_funds > 0:
+            xirr_flows.append({
+                "date": datetime.date.today().isoformat(),
+                "amount": current_value + available_funds,
+                "type": "withdrawal"
+            })
+            
+        # Amounts for XIRR: deposits are negative (cash out of pocket), withdrawals are positive (cash in hand)
+        formatted_flows = []
+        for tx in xirr_flows:
+            amount = tx["amount"]
+            if tx["type"] == "deposit" and amount > 0:
+                amount = -amount # Outflow from investor's perspective
+            formatted_flows.append({"date": tx["date"], "amount": amount})
+            
+        xirr = calculate_xirr(formatted_flows)
+        
+        response = holdings_pb2.PortfolioValuationResponse(
+            current_value=current_value,
+            available_funds=available_funds,
+            xirr=xirr
+        )
+        
+        for tx in transactions:
+            response.transactions.append(holdings_pb2.CashTransaction(
+                date=tx["date"],
+                amount=tx["amount"],
+                type=tx["type"]
+            ))
+            
         return response
 
     def StreamLiveTicks(self, request, context):

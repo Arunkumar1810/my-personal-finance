@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
-from .i_kite_adapter import IKiteAdapter
+import time
+from i_kite_adapter import IKiteAdapter
 
 class ProductionKiteAdapter(IKiteAdapter):
     """
@@ -23,3 +24,12 @@ class ProductionKiteAdapter(IKiteAdapter):
         
     def historical_data(self, instrument_token: int, from_date: str, to_date: str, interval: str) -> List[Dict[str, Any]]:
         return self._kite.historical_data(instrument_token, from_date, to_date, interval)
+
+    def margins(self) -> Dict[str, Any]:
+        return self._kite.margins()
+
+    def get_cash_transactions(self) -> List[Dict[str, Any]]:
+        # Note: Kite Connect API currently does not support fetching historical cash deposits and withdrawals.
+        # This would either require Console API parsing or manual entry.
+        return []
+

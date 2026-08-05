@@ -25,6 +25,14 @@ def init_db():
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT NOT NULL,
+            amount REAL NOT NULL,
+            type TEXT NOT NULL
+        )
+    ''')
     conn.commit()
     conn.close()
 
@@ -64,3 +72,18 @@ def get_cached_positions():
     if row:
         return json.loads(row['data'])
     return None
+
+def save_transaction(date, amount, type):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('INSERT INTO transactions (date, amount, type) VALUES (?, ?, ?)', (date, amount, type))
+    conn.commit()
+    conn.close()
+
+def get_transactions():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id, date, amount, type FROM transactions ORDER BY date ASC')
+    rows = cursor.fetchall()
+    conn.close()
+    return [{"id": row["id"], "date": row["date"], "amount": row["amount"], "type": row["type"]} for row in rows]
