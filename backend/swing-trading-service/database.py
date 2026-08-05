@@ -1,7 +1,8 @@
+import os
 import sqlite3
 import json
 
-DATABASE_URL = "holdings_cache.db"
+DATABASE_URL = os.path.join(os.path.dirname(__file__), "holdings_cache.db")
 
 def get_db_connection():
     conn = sqlite3.connect(DATABASE_URL)

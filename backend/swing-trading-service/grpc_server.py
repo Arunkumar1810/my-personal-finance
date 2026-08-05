@@ -62,11 +62,14 @@ class SwingTradingServiceServicer(holdings_pb2_grpc.KiteServiceServicer):
             })
             
         # Amounts for XIRR: deposits are negative (cash out of pocket), withdrawals are positive (cash in hand)
+        # DB stores withdrawals as negative amounts, so we use abs() and re-sign by type.
         formatted_flows = []
         for tx in xirr_flows:
-            amount = tx["amount"]
-            if tx["type"] == "deposit" and amount > 0:
-                amount = -amount # Outflow from investor's perspective
+            abs_amount = abs(float(tx["amount"]))
+            if tx["type"] == "deposit":
+                amount = -abs_amount  # Outflow from investor's perspective
+            else:
+                amount = abs_amount   # Inflow to investor (withdrawal or final portfolio value)
             formatted_flows.append({"date": tx["date"], "amount": amount})
             
         xirr = calculate_xirr(formatted_flows)
