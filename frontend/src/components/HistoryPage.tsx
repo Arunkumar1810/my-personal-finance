@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CampaignJournalModal, Campaign as ModalCampaign } from './CampaignJournalModal';
 
 interface RawExecution {
   id: number;
@@ -9,25 +10,15 @@ interface RawExecution {
   timestamp: string;
 }
 
-interface Campaign {
-  id: number;
-  ticker: string;
-  status: string;
-  created_at: string;
-  entry_price: number;
-  exit_price: number;
-  realized_pnl: number;
-  executions_count: number;
-}
-
 export function HistoryPage() {
   const [activeTab, setActiveTab] = useState<'raw' | 'campaigns'>('raw');
   const [executions, setExecutions] = useState<RawExecution[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [campaigns, setCampaigns] = useState<ModalCampaign[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingCampaign, setEditingCampaign] = useState<ModalCampaign | null>(null);
 
   const fetchExecutions = async () => {
     try {
@@ -229,22 +220,34 @@ export function HistoryPage() {
                     <th className="px-6 py-3 font-medium text-gray-400 text-right">Avg Entry</th>
                     <th className="px-6 py-3 font-medium text-gray-400 text-right">Avg Exit</th>
                     <th className="px-6 py-3 font-medium text-gray-400 text-right">Realized P/L</th>
+                    <th className="px-6 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#2C2C35]">
                   {loading ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">Loading campaigns...</td>
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">Loading campaigns...</td>
                     </tr>
                   ) : campaigns.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-gray-500">No campaigns created yet. Group some raw executions!</td>
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">No campaigns created yet. Group some raw executions!</td>
                     </tr>
                   ) : (
                     campaigns.map(camp => (
                       <tr key={camp.id} className="hover:bg-[#1C1C24]/50 transition-colors">
-                        <td className="px-6 py-4 text-gray-300">{new Date(camp.created_at).toLocaleDateString()}</td>
-                        <td className="px-6 py-4 font-medium text-white">{camp.ticker}</td>
+                        <td className="px-6 py-4 text-gray-300">
+                          <div className="flex flex-col">
+                            <span>{new Date(camp.created_at).toLocaleDateString()}</span>
+                            {camp.emotion && <span className="text-xs text-gray-500 mt-1">{camp.emotion} (R:{camp.regret_metric})</span>}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-white">{camp.ticker}</div>
+                          <div className="flex space-x-1 mt-1">
+                            {camp.strategy && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-500/10 text-purple-400">{camp.strategy}</span>}
+                            {camp.sell_reason && <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-orange-500/10 text-orange-400">{camp.sell_reason}</span>}
+                          </div>
+                        </td>
                         <td className="px-6 py-4">
                           <span className="px-2 py-1 rounded text-xs font-medium bg-blue-500/10 text-blue-400">
                             {camp.status.toUpperCase()} ({camp.executions_count} trades)
@@ -255,12 +258,30 @@ export function HistoryPage() {
                         <td className={`px-6 py-4 text-right font-medium ${camp.realized_pnl >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                           {camp.realized_pnl >= 0 ? '+' : ''}₹{camp.realized_pnl.toFixed(2)}
                         </td>
+                        <td className="px-6 py-4 text-right">
+                          <button 
+                            onClick={() => setEditingCampaign(camp)}
+                            className="text-xs text-[#FF5722] hover:text-[#F4511E] font-medium px-3 py-1.5 border border-[#FF5722]/30 rounded hover:bg-[#FF5722]/10 transition-colors"
+                          >
+                            Journal
+                          </button>
+                        </td>
                       </tr>
                     ))
                   )}
                 </tbody>
               </table>
             </div>
+            {editingCampaign && (
+              <CampaignJournalModal
+                campaign={editingCampaign}
+                onClose={() => setEditingCampaign(null)}
+                onSave={() => {
+                  setEditingCampaign(null);
+                  fetchExecutions();
+                }}
+              />
+            )}
           </>
         )}
       </div>

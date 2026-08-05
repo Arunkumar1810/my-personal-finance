@@ -276,3 +276,26 @@ async def get_campaigns_endpoint():
         return {"campaigns": campaigns}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+class UpdateCampaignRequest(BaseModel):
+    strategy: str | None = None
+    sell_reason: str | None = None
+    emotion: str | None = None
+    regret_metric: int | None = None
+    rationale: str | None = None
+
+@app.patch("/api/campaigns/{campaign_id}")
+async def patch_campaign(campaign_id: int, req: UpdateCampaignRequest):
+    try:
+        from database import update_swing_campaign
+        update_swing_campaign(
+            campaign_id, 
+            strategy=req.strategy, 
+            sell_reason=req.sell_reason, 
+            emotion=req.emotion, 
+            regret_metric=req.regret_metric, 
+            rationale=req.rationale
+        )
+        return {"status": "success"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

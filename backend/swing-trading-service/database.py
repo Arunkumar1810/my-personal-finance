@@ -77,6 +77,20 @@ def init_db():
             FOREIGN KEY (execution_id) REFERENCES raw_executions(id)
         )
     ''')
+    # Epic 2: Behavioral fields for swing_campaigns
+    new_columns = [
+        ("strategy", "TEXT"),
+        ("sell_reason", "TEXT"),
+        ("emotion", "TEXT"),
+        ("regret_metric", "INTEGER"),
+        ("rationale", "TEXT")
+    ]
+    for col_name, col_type in new_columns:
+        try:
+            cursor.execute(f"ALTER TABLE swing_campaigns ADD COLUMN {col_name} {col_type}")
+        except sqlite3.OperationalError:
+            pass
+            
     conn.commit()
     conn.close()
 
@@ -240,7 +254,7 @@ def get_swing_campaigns(user_id="default"):
     cursor = conn.cursor()
     
     # Get campaigns
-    cursor.execute('SELECT id, ticker, status, created_at FROM swing_campaigns WHERE user_id = ? ORDER BY created_at DESC', (user_id,))
+    cursor.execute('SELECT id, ticker, status, created_at, strategy, sell_reason, emotion, regret_metric, rationale FROM swing_campaigns WHERE user_id = ? ORDER BY created_at DESC', (user_id,))
     campaigns = [dict(row) for row in cursor.fetchall()]
     
     # Calculate aggregation
@@ -273,5 +287,16 @@ def get_swing_campaigns(user_id="default"):
         
     conn.close()
     return campaigns
+
+def update_swing_campaign(campaign_id, strategy=None, sell_reason=None, emotion=None, regret_metric=None, rationale=None):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('''
+        UPDATE swing_campaigns
+        SET strategy = ?, sell_reason = ?, emotion = ?, regret_metric = ?, rationale = ?
+        WHERE id = ?
+    ''', (strategy, sell_reason, emotion, regret_metric, rationale, campaign_id))
+    conn.commit()
+    conn.close()
 
 
