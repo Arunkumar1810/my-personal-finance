@@ -57,12 +57,12 @@ def authenticate_console(user_id, password, totp_code):
     if not console_session:
         raise Exception("Failed to extract console session cookie after SSO")
         
+    # We explicitly strip Kite cookies to bypass the backend CSRF check.
     for cookie_name in ['enctoken', 'kf_session', 'public_token', 'user_id']:
         if cookie_name in session.cookies:
             del session.cookies[cookie_name]
-        
-    # We explicitly strip Kite cookies to bypass the backend CSRF check.
-    return {"enctoken": enctoken, "session_obj": session}
+            
+    return {"enctoken": enctoken, "session_obj": session, "csrftoken": None}
 
 def fetch_and_parse_ledger(auth_data):
     """
@@ -81,6 +81,9 @@ def fetch_and_parse_ledger(auth_data):
         "sec-fetch-mode": "cors",
         "sec-fetch-dest": "empty"
     }
+    
+    if auth_data.get('csrftoken'):
+        headers["X-CSRFToken"] = auth_data["csrftoken"]
     
     cash_transactions = []
     page = 1
@@ -108,10 +111,12 @@ def fetch_and_parse_ledger(auth_data):
         if response_data.get("status") != "success":
             raise Exception(f"Ledger API error: {response_data.get('message')}")
             
-        data_field = response_data.get("data", {})
-        
+        data_field = response_data.get("data")
+        if not isinstance(data_field, dict):
+            data_field = {}
+            
         # Update total pages from pagination data
-        pagination = data_field.get("pagination", {})
+        pagination = data_field.get("pagination") or {}
         if pagination.get("total_pages"):
             total_pages = pagination.get("total_pages")
             
@@ -175,3 +180,97 @@ def fetch_and_parse_ledger(auth_data):
         page += 1
         
     return cash_transactions
+
+def fetch_and_parse_tradebook(auth_data, from_date: str = None, to_date: str = None):
+    """
+    Fetches the historical tradebook from Zerodha Console API using the authenticated session.
+    """
+    session = auth_data['session_obj']
+    enctoken = auth_data['enctoken']
+    
+    if not from_date:
+        from datetime import datetime, timedelta
+        from_date = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+    if not to_date:
+        from datetime import datetime
+        to_date = datetime.now().strftime("%Y-%m-%d")
+        
+    headers = {
+        "Authorization": f"enctoken {urllib.parse.unquote(enctoken)}",
+        "Accept": "application/json",
+        "referer": "https://console.zerodha.com/",
+        "x-kite-version": "3",
+        "sec-fetch-site": "same-origin",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-dest": "empty"
+    }
+    if auth_data.get('csrftoken'):
+        headers["X-CSRFToken"] = auth_data["csrftoken"]
+
+    from datetime import datetime, timedelta
+    start_dt = datetime.strptime(from_date, "%Y-%m-%d")
+    end_dt = datetime.strptime(to_date, "%Y-%m-%d")
+    
+    parsed_executions = []
+    
+    current_dt = start_dt
+    while current_dt <= end_dt:
+        chunk_end_dt = current_dt + timedelta(days=100)
+        if chunk_end_dt > end_dt:
+            chunk_end_dt = end_dt
+            
+        chunk_from = current_dt.strftime("%Y-%m-%d")
+        chunk_to = chunk_end_dt.strftime("%Y-%m-%d")
+        
+        page = 1
+        total_pages = 1
+        while page <= total_pages:
+            url = f"https://console.zerodha.com/api/reports/tradebook"
+            params = {
+                "segment": "EQ",
+                "from_date": chunk_from,
+                "to_date": chunk_to,
+                "page": page
+            }
+            
+            response = session.get(url, headers=headers, params=params)
+            if response.status_code != 200:
+                print(f"Failed to fetch tradebook chunk {chunk_from}-{chunk_to}: {response.status_code}")
+                break
+                
+            data = response.json()
+            if data.get("status") != "success":
+                print(f"Console API error for chunk {chunk_from}-{chunk_to}: {data.get('message', 'Unknown error')}")
+                break
+                
+            data_field = data.get("data")
+            if isinstance(data_field, list):
+                result = data_field
+            elif isinstance(data_field, dict):
+                pagination = data_field.get("pagination") or {}
+                if pagination.get("total_pages"):
+                    total_pages = pagination.get("total_pages")
+                    
+                result_field = data_field.get("result")
+                if isinstance(result_field, list):
+                    result = result_field
+                elif isinstance(result_field, dict):
+                    result = result_field.get("breakdown") or []
+                else:
+                    result = []
+            else:
+                result = []
+                
+            for trade in result:
+                parsed_executions.append({
+                    "ticker": trade.get("tradingsymbol", trade.get("symbol")),
+                    "side": "BUY" if trade.get("trade_type", "").lower() == "buy" else "SELL",
+                    "quantity": float(trade.get("quantity", 0)),
+                    "price": float(trade.get("price", trade.get("average_price", 0))),
+                    "timestamp": trade.get("order_execution_time", trade.get("trade_date"))
+                })
+            page += 1
+            
+        current_dt = chunk_end_dt + timedelta(days=1)
+        
+    return parsed_executions

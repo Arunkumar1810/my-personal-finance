@@ -17,6 +17,11 @@ export interface Campaign {
   planned_risk?: number;
   planned_reward?: number;
   ai_analysis?: string;
+  total_buy_qty?: number;
+  total_sell_qty?: number;
+  first_buy_date?: string;
+  last_sell_date?: string;
+  xirr?: number;
 }
 
 interface Props {

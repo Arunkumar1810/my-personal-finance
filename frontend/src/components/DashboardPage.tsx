@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Campaign } from './CampaignJournalModal';
+import type { Campaign } from './CampaignJournalModal';
 
 export function DashboardPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);

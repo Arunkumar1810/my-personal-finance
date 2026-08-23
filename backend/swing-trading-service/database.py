@@ -252,6 +252,22 @@ def create_swing_campaign(user_id, ticker, execution_ids):
     finally:
         conn.close()
 
+def add_executions_to_campaign(campaign_id, execution_ids):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    try:
+        for ex_id in execution_ids:
+            cursor.execute('''
+                INSERT INTO campaign_executions (campaign_id, execution_id)
+                VALUES (?, ?)
+            ''', (campaign_id, ex_id))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
 def get_swing_campaigns(user_id="default"):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -263,7 +279,7 @@ def get_swing_campaigns(user_id="default"):
     # Calculate aggregation
     for camp in campaigns:
         cursor.execute('''
-            SELECT r.side, r.quantity, r.price 
+            SELECT r.side, r.quantity, r.price, r.timestamp 
             FROM raw_executions r
             JOIN campaign_executions ce ON r.id = ce.execution_id
             WHERE ce.campaign_id = ?
@@ -275,32 +291,73 @@ def get_swing_campaigns(user_id="default"):
         total_sell_qty = 0
         total_sell_val = 0
         
+        buy_dates = []
+        sell_dates = []
+        cashflows = []
+        
+        import datetime
+        
         for ex in executions:
+            try:
+                # Handle ISO timestamps
+                dt = datetime.datetime.fromisoformat(ex["timestamp"].replace("Z", "+00:00")).date()
+            except:
+                # Fallback
+                dt = datetime.datetime.strptime(ex["timestamp"].split(" ")[0].split("T")[0], "%Y-%m-%d").date()
+                
             if ex["side"].upper() == "BUY":
                 total_buy_qty += ex["quantity"]
                 total_buy_val += ex["quantity"] * ex["price"]
+                buy_dates.append(dt)
+                cashflows.append((dt, -(ex["quantity"] * ex["price"])))
             elif ex["side"].upper() == "SELL":
                 total_sell_qty += ex["quantity"]
                 total_sell_val += ex["quantity"] * ex["price"]
+                sell_dates.append(dt)
+                cashflows.append((dt, ex["quantity"] * ex["price"]))
                 
         camp["entry_price"] = total_buy_val / total_buy_qty if total_buy_qty > 0 else 0
         camp["exit_price"] = total_sell_val / total_sell_qty if total_sell_qty > 0 else 0
         camp["realized_pnl"] = total_sell_val - (total_buy_val * (total_sell_qty / total_buy_qty) if total_buy_qty > 0 else 0)
         camp["executions_count"] = len(executions)
+        camp["total_buy_qty"] = total_buy_qty
+        camp["total_sell_qty"] = total_sell_qty
         
+        camp["first_buy_date"] = min(buy_dates).isoformat() if buy_dates else None
+        camp["last_sell_date"] = max(sell_dates).isoformat() if sell_dates else None
+        
+        # Calculate XIRR if campaign is completely closed
+        camp["xirr"] = None
+        if total_buy_qty > 0 and total_buy_qty == total_sell_qty:
+            # check if there are both positive and negative cashflows
+            if any(cf[1] > 0 for cf in cashflows) and any(cf[1] < 0 for cf in cashflows):
+                cashflows.sort(key=lambda x: x[0])
+                t0 = cashflows[0][0]
+                def xnpv(rate):
+                    if rate <= -1.0: return float('inf')
+                    return sum(cf / (1.0 + rate)**((t - t0).days / 365.0) for t, cf in cashflows)
+                
+                left, right = -0.99, 10.0
+                v_left, v_right = xnpv(left), xnpv(right)
+                
+                if v_left * v_right <= 0:
+                    for _ in range(100):
+                        mid = (left + right) / 2.0
+                        v_mid = xnpv(mid)
+                        if abs(v_mid) < 1e-5: break
+                        if v_left * v_mid < 0:
+                            right = mid; v_right = v_mid
+                        else:
+                            left = mid; v_left = v_mid
+                    camp["xirr"] = (left + right) / 2.0
+                    
     conn.close()
     return campaigns
 
-def update_swing_campaign(campaign_id, strategy=None, sell_reason=None, emotion=None, regret_metric=None, rationale=None, planned_risk=None, planned_reward=None, ai_analysis=None):
+def update_swing_campaign(campaign_id, strategy=None, sell_reason=None, emotion=None, regret_metric=None, rationale=None, planned_risk=None, planned_reward=None, ai_analysis=None, status=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # We update all fields dynamically or just do a coalesced update. 
-    # For now, we update them if they are passed. Wait, the current implementation overwrites everything.
-    # We should probably only update ai_analysis if it's passed or just leave it as it was if we don't want to wipe it.
-    # To keep it simple without changing the existing logic too much, let's just make it a separate function to save ai analysis, or use coalesce.
-    
-    # Actually, the task says: Update the retrieval and update queries in database.py to include ai_analysis.
     cursor.execute('''
         UPDATE swing_campaigns
         SET strategy = COALESCE(?, strategy), 
@@ -310,9 +367,10 @@ def update_swing_campaign(campaign_id, strategy=None, sell_reason=None, emotion=
             rationale = COALESCE(?, rationale), 
             planned_risk = COALESCE(?, planned_risk), 
             planned_reward = COALESCE(?, planned_reward),
-            ai_analysis = COALESCE(?, ai_analysis)
+            ai_analysis = COALESCE(?, ai_analysis),
+            status = COALESCE(?, status)
         WHERE id = ?
-    ''', (strategy, sell_reason, emotion, regret_metric, rationale, planned_risk, planned_reward, ai_analysis, campaign_id))
+    ''', (strategy, sell_reason, emotion, regret_metric, rationale, planned_risk, planned_reward, ai_analysis, status, campaign_id))
     conn.commit()
     conn.close()
 

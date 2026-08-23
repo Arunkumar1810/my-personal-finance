@@ -14,7 +14,7 @@ from kite_client import get_kite_login_url, authenticate_kite
 from tick_consumer import consume_ticks, consume_unified_updates
 from connection_manager import manager
 from pydantic import BaseModel
-from console_client import authenticate_console, fetch_and_parse_ledger
+from console_client import authenticate_console, fetch_and_parse_ledger, fetch_and_parse_tradebook
 from database import (
     get_transactions, save_transaction, wipe_transactions,
     get_broker_credentials, save_broker_credentials, save_raw_executions, get_raw_executions
@@ -142,7 +142,7 @@ async def get_transactions_endpoint():
         transactions = get_transactions()
         return {"transactions": transactions}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/transactions")
 async def create_transaction(tx: TransactionCreate):
@@ -150,7 +150,7 @@ async def create_transaction(tx: TransactionCreate):
         save_transaction(tx.date, tx.amount, tx.type)
         return {"status": "success"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 class ConsoleLoginRequest(BaseModel):
     user_id: str
@@ -170,7 +170,40 @@ async def console_login(req: ConsoleLoginRequest):
             
         return {"status": "success", "fetched_transactions_count": len(transactions)}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
+
+class TradebookSyncRequest(BaseModel):
+    user_id: str
+    password: str
+    totp_code: str
+    from_date: str | None = None
+    to_date: str | None = None
+
+@app.post("/api/console/tradebook-sync")
+async def console_tradebook_sync(req: TradebookSyncRequest):
+    """Authenticate with Zerodha Console, fetch historical tradebook, and save as raw executions."""
+    try:
+        # Authenticate fresh to get a valid enctoken and session
+        auth_data = authenticate_console(req.user_id, req.password, req.totp_code)
+
+        parsed_executions = fetch_and_parse_tradebook(
+            auth_data=auth_data,
+            from_date=req.from_date,
+            to_date=req.to_date
+        )
+
+        count = save_raw_executions(parsed_executions, "default")
+
+        return {
+            "status": "success",
+            "synced_count": count,
+            "total_fetched": len(parsed_executions)
+        }
+    except Exception as e:
+        error_msg = str(e)
+        if any(keyword in error_msg for keyword in ["Login failed", "2FA failed", "Failed to extract enctoken"]):
+            raise HTTPException(status_code=401, detail=error_msg)
+        raise HTTPException(status_code=500, detail=error_msg)
 
 
 class BrokerCredentials(BaseModel):
@@ -193,7 +226,7 @@ async def save_broker_credentials_endpoint(creds: BrokerCredentials):
         save_broker_credentials("default", creds.api_key, creds.api_secret)
         return {"status": "success"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/broker/verify")
 async def verify_broker_connection():
@@ -209,7 +242,7 @@ async def verify_broker_connection():
         login_url = kite.login_url()
         return {"status": "success", "login_url": login_url}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/broker/sync")
 async def sync_broker_trades():
@@ -245,7 +278,7 @@ async def sync_broker_trades():
         return {"status": "success", "synced_count": count}
         
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/broker/executions")
 async def get_raw_executions_endpoint():
@@ -253,7 +286,7 @@ async def get_raw_executions_endpoint():
         executions = get_raw_executions("default")
         return {"executions": executions}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 class CreateCampaignRequest(BaseModel):
     ticker: str
@@ -266,7 +299,19 @@ async def create_campaign(req: CreateCampaignRequest):
         campaign_id = create_swing_campaign("default", req.ticker, req.execution_ids)
         return {"status": "success", "campaign_id": campaign_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
+
+class AddExecutionsRequest(BaseModel):
+    execution_ids: list[int]
+
+@app.post("/api/campaigns/{campaign_id}/executions")
+async def add_executions_to_campaign_endpoint(campaign_id: int, req: AddExecutionsRequest):
+    try:
+        from database import add_executions_to_campaign
+        add_executions_to_campaign(campaign_id, req.execution_ids)
+        return {"status": "success"}
+    except Exception as e:
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/campaigns")
 async def get_campaigns_endpoint():
@@ -275,7 +320,7 @@ async def get_campaigns_endpoint():
         campaigns = get_swing_campaigns("default")
         return {"campaigns": campaigns}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 class UpdateCampaignRequest(BaseModel):
     strategy: str | None = None
@@ -285,6 +330,7 @@ class UpdateCampaignRequest(BaseModel):
     rationale: str | None = None
     planned_risk: float | None = None
     planned_reward: float | None = None
+    status: str | None = None
 
 @app.patch("/api/campaigns/{campaign_id}")
 async def patch_campaign(campaign_id: int, req: UpdateCampaignRequest):
@@ -298,11 +344,12 @@ async def patch_campaign(campaign_id: int, req: UpdateCampaignRequest):
             regret_metric=req.regret_metric, 
             rationale=req.rationale,
             planned_risk=req.planned_risk,
-            planned_reward=req.planned_reward
+            planned_reward=req.planned_reward,
+            status=req.status
         )
         return {"status": "success"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/dashboard/daily-pnl")
 async def get_daily_pnl():
@@ -319,7 +366,7 @@ async def get_daily_pnl():
                 daily_pnl[date_str] = daily_pnl.get(date_str, 0) + pnl
         return {"daily_pnl": daily_pnl}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/campaigns/{campaign_id}/ai-analysis")
 async def generate_campaign_ai_analysis(campaign_id: int):
@@ -344,4 +391,4 @@ Based on your rationale ("{camp.get('rationale', 'No rationale provided')}"), yo
         update_swing_campaign(campaign_id, ai_analysis=mock_analysis)
         return {"ai_analysis": mock_analysis}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(str(e)); import traceback; traceback.print_exc(); raise HTTPException(status_code=500, detail=str(e))
