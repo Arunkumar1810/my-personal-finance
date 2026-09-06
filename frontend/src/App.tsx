@@ -32,7 +32,6 @@ import { HistoryPage } from './assets/indian-swing-trading/HistoryPage';
 import { RiskDashboardPage } from './assets/indian-swing-trading/RiskDashboardPage';
 import { BrokerSyncView } from './assets/indian-swing-trading/BrokerSyncView';
 
-import './App.css';
 
 function App() {
   return (

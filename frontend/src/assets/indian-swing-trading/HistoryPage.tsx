@@ -75,7 +75,7 @@ export function HistoryPage() {
         try {
           const errData = await res.json();
           if (errData && errData.detail) errMsg = errData.detail;
-        } catch (e) { }
+        } catch { }
         throw new Error(errMsg);
       }
       await fetchExecutions();
@@ -110,7 +110,7 @@ export function HistoryPage() {
         try {
           const errData = await res.json();
           if (errData && errData.detail) errMsg = errData.detail;
-        } catch (e) { }
+        } catch { }
         if (res.status === 401) {
           errMsg = 'Authentication failed. Please check your Zerodha credentials and TOTP code.';
         }

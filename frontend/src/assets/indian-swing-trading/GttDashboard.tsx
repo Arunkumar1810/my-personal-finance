@@ -109,7 +109,7 @@ export const GttDashboard: React.FC = () => {
     return () => {
       ws.close();
     };
-  }, []);
+  }, [setIsFallback]);
 
   return (
     <>
