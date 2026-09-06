@@ -12,6 +12,7 @@ The system SHALL provide persistent workspace navigation connecting all function
 - **WHEN** the user interacts with the navigation menu
 - **THEN** links for "Wealth Dashboard", "Portfolio Valuation", "Liabilities", "Goals", and "Assets" are accessible
 - **AND** expanding the "Assets" menu reveals sub-domains for "Assets Dashboard", "Indian ETFs", "Indian LT Stocks", "US Stocks & ETFs", "Indian Swing Trading", "ESOPs & RSUs", "Fixed Deposits", "PF", and "Indian Bonds"
+- **AND** expanding any asset sub-domain tree presents "Asset Evaluation" and "Transactions" as primary access routes alongside asset-specific holdings or analytical views
 - **AND** selecting any domain route updates the active view without reloading the entire application.
 
 #### Scenario: Visual theme presentation

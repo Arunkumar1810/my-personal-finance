@@ -71,6 +71,12 @@ export function AssetsLayout() {
             </button>
             {openTrees.etf && (
               <div className="pl-4 space-y-1 mt-1">
+                <NavLink to="/assets/indian-etfs/asset-evaluation" className={linkClass}>
+                  Asset Evaluation
+                </NavLink>
+                <NavLink to="/assets/indian-etfs/transactions" className={linkClass}>
+                  Transactions
+                </NavLink>
                 <NavLink to="/assets/indian-etfs/holdings" className={linkClass}>
                   Holdings
                 </NavLink>
@@ -105,6 +111,12 @@ export function AssetsLayout() {
             </button>
             {openTrees.ltStocks && (
               <div className="pl-4 space-y-1 mt-1">
+                <NavLink to="/assets/indian-lt-stocks/asset-evaluation" className={linkClass}>
+                  Asset Evaluation
+                </NavLink>
+                <NavLink to="/assets/indian-lt-stocks/transactions" className={linkClass}>
+                  Transactions
+                </NavLink>
                 <NavLink to="/assets/indian-lt-stocks/holdings" className={linkClass}>
                   Holdings
                 </NavLink>
@@ -139,6 +151,12 @@ export function AssetsLayout() {
             </button>
             {openTrees.usStocks && (
               <div className="pl-4 space-y-1 mt-1">
+                <NavLink to="/assets/us-stocks/asset-evaluation" className={linkClass}>
+                  Asset Evaluation
+                </NavLink>
+                <NavLink to="/assets/us-stocks/transactions" className={linkClass}>
+                  Transactions
+                </NavLink>
                 <NavLink to="/assets/us-stocks/holdings" className={linkClass}>
                   Holdings
                 </NavLink>
@@ -173,6 +191,12 @@ export function AssetsLayout() {
             </button>
             {openTrees.esops && (
               <div className="pl-4 space-y-1 mt-1">
+                <NavLink to="/assets/esops/asset-evaluation" className={linkClass}>
+                  Asset Evaluation
+                </NavLink>
+                <NavLink to="/assets/esops/transactions" className={linkClass}>
+                  Transactions
+                </NavLink>
                 <NavLink to="/assets/esops/vesting" className={linkClass}>
                   Vesting Schedule
                 </NavLink>
@@ -207,6 +231,12 @@ export function AssetsLayout() {
             </button>
             {openTrees.fd && (
               <div className="pl-4 space-y-1 mt-1">
+                <NavLink to="/assets/fixed-deposits/asset-evaluation" className={linkClass}>
+                  Asset Evaluation
+                </NavLink>
+                <NavLink to="/assets/fixed-deposits/transactions" className={linkClass}>
+                  Transactions
+                </NavLink>
                 <NavLink to="/assets/fixed-deposits/active" className={linkClass}>
                   Active FDs
                 </NavLink>
@@ -241,6 +271,12 @@ export function AssetsLayout() {
             </button>
             {openTrees.bonds && (
               <div className="pl-4 space-y-1 mt-1">
+                <NavLink to="/assets/indian-bonds/asset-evaluation" className={linkClass}>
+                  Asset Evaluation
+                </NavLink>
+                <NavLink to="/assets/indian-bonds/transactions" className={linkClass}>
+                  Transactions
+                </NavLink>
                 <NavLink to="/assets/indian-bonds/holdings" className={linkClass}>
                   Holdings
                 </NavLink>
@@ -275,6 +311,12 @@ export function AssetsLayout() {
             </button>
             {openTrees.pf && (
               <div className="pl-4 space-y-1 mt-1">
+                <NavLink to="/assets/pf-account/asset-evaluation" className={linkClass}>
+                  Asset Evaluation
+                </NavLink>
+                <NavLink to="/assets/pf-account/transactions" className={linkClass}>
+                  Transactions
+                </NavLink>
                 <NavLink to="/assets/pf-account/ledger" className={linkClass}>
                   Ledger
                 </NavLink>
@@ -309,6 +351,12 @@ export function AssetsLayout() {
             </button>
             {openTrees.swing && (
               <div className="pl-4 space-y-1 mt-1">
+                <NavLink to="/assets/swing/asset-evaluation" className={linkClass}>
+                  Asset Evaluation
+                </NavLink>
+                <NavLink to="/assets/swing/transactions" className={linkClass}>
+                  Transactions
+                </NavLink>
                 <NavLink to="/assets/swing/trades" className={linkClass}>
                   Active Trades
                 </NavLink>
