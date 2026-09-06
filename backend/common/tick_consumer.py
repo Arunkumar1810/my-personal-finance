@@ -1,8 +1,15 @@
 import asyncio
 import json
 import grpc
+import os
+import sys
+
+swing_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'swing-trading-service')
+if swing_dir not in sys.path:
+    sys.path.append(swing_dir)
+
 from protos import holdings_pb2, holdings_pb2_grpc
-from connection_manager import manager
+from .connection_manager import manager
 
 async def consume_ticks():
     # Connect to the Swing-Trading Service
