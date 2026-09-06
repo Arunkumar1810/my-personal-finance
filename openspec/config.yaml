@@ -1,20 +1,31 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Architecture & Domain Classifications:
+  Capabilities represent end-to-end functional requirements spanning both frontend and backend.
+  There is no 'common' capability (common is an engineering/code artifact, not a user requirement).
+  Do not use 'page', 'ui', or 'view' in capability names or requirements.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+  Primary Domain Structure:
+  - wealth-dashboard: Central net worth aggregation, financial health scoring, allocation rebalancing, growth trajectory, workspace layout & navigation
+  - portfolio-valuation: Capital story, capital efficiency, monthly cash flows, transaction ledger, Console sync
+  - liabilities: Debt management, home/car/personal loans, credit cards, amortization and payoff simulations
+  - goals: Milestone planning, target progress, completion timelines, monthly SIP run-rate analytics
+  - assets:
+    - assets-dashboard: Multi-asset aggregation rollup, allocation drift
+    - indian-etfs: Index, sectoral, gold, liquid ETF tracking, NAV and return metrics
+    - indian-lt-stocks: Core long-term equity holdings, sector diversification, fundamental metrics
+    - us-stocks-etfs: US equities and ETFs, dual-currency valuation (USD/INR), LRS quota
+    - indian-swing-trading: Active trades, GTT orders, watchlist, tradebook, journal, risk dashboard, AI coaching
+    - esops-rsus: Stock grants, vesting schedules, in-the-money gain, tax liabilities
+    - fixed-deposits: Term deposits, compounding interest, maturity calendar
+    - pf: Provident Fund (EPF/PPF), statutory interest compounding, contributions
+    - indian-bonds: Sovereign gold bonds, G-Secs, corporate NCDs, coupon schedules, yield to maturity
+
+rules:
+  proposal:
+    - Capabilities must align with the functional domains above
+    - Do not propose capabilities named 'common' or with suffixes like '-page' or '-ui'
+  specs:
+    - Requirements must specify complete system behavior across both backend logic and frontend interactions
+    - Scenarios must use exactly 4 hashtags (####) with WHEN/THEN format
