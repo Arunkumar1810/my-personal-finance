@@ -36,6 +36,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Monolith API Gateway", lifespan=lifespan)
 
+from api.orchestrator import router as orchestrator_router
+app.include_router(orchestrator_router, prefix="/api/orchestrator", tags=["orchestrator"])
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:8000"],

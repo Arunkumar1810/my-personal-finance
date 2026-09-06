@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface WealthVelocityProps { xirr: number; }
 
 export function WealthVelocity({ xirr }: WealthVelocityProps) {
@@ -11,7 +9,7 @@ export function WealthVelocity({ xirr }: WealthVelocityProps) {
 
   // SVG: 400 wide × 220 tall. Gauge centred at (200, 185) r=140
   const W = 400, H = 220, cx = 200, cy = 185, R = 140;
-  const GAP = 3; // gap in px between zone arcs
+
 
   // polar helper (0°=right, counter-clockwise for upper half)
   // Semicircle: left end = 180°, right end = 0°

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { LiquidityRiver } from './LiquidityRiver';
 import type { Campaign } from './CampaignJournalModal';
 
 export function DashboardPage() {
@@ -146,6 +147,8 @@ export function DashboardPage() {
         <h1 className="text-3xl font-bold text-white tracking-tight">Risk Dashboard</h1>
         <p className="text-gray-400 mt-2">Confront your exposure and consistency.</p>
       </div>
+
+      <LiquidityRiver />
 
       {/* Top Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { PositionsTable, Position } from './PositionsTable';
+import { PositionsTable, type Position } from './PositionsTable';
 import { PositionCard } from './PositionCard';
 
 interface PositionsListProps {
