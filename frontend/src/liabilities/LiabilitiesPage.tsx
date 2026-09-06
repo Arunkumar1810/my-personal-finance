@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchLiabilities, saveLiability } from '../../services/api';
+import { fetchLiabilities, saveLiability } from '../services/api';
 
 export interface Liability {
   id: string;

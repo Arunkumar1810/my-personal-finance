@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { GttTable, type GttOrder } from './GttTable';
-import { EmptyState } from './EmptyState';
-import { ErrorOverlay } from './ErrorOverlay';
-import { useFallback } from './FallbackContext';
+import { EmptyState } from '../../common/EmptyState';
+import { ErrorOverlay } from '../../common/ErrorOverlay';
+import { useFallback } from '../../common/FallbackContext';
 
 export const GttDashboard: React.FC = () => {
   const [orders, setOrders] = useState<GttOrder[]>([]);

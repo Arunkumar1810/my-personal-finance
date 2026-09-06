@@ -1,5 +1,5 @@
 import React from 'react';
-import { useFallback } from './FallbackContext';
+import { useFallback } from '../../common/FallbackContext';
 
 export interface GttOrder {
   id: string;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { TickerInputForm } from './TickerInputForm';
-import { useFallback } from './FallbackContext';
+import { useFallback } from '../../common/FallbackContext';
 
 export function WatchlistQueue() {
   const [watchlist] = useState<string[]>(['AAPL', 'MSFT', 'GOOG']);

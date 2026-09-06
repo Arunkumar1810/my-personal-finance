@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
-export function Settings() {
+export function SettingsPage() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,14 +21,13 @@ export function Settings() {
       setLoading(true);
       setError(null);
       
-      // Verify and get login URL using the .env configuration on the backend
       const response = await fetch('http://localhost:8000/api/broker/verify', { method: 'POST' });
       if (!response.ok) {
         let errMsg = 'Failed to fetch login URL. Please ensure your .env file is configured correctly.';
         try {
           const errData = await response.json();
           if (errData && errData.detail) errMsg = errData.detail;
-        } catch (e) { }
+        } catch { }
         throw new Error(errMsg);
       }
       

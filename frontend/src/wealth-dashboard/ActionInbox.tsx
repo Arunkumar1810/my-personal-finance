@@ -22,7 +22,6 @@ export const ActionInbox = () => {
         setAlerts(alerts.filter((_, i) => i !== index));
     };
 
-
     if (alerts.length === 0) return null;
 
     return (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { HoldingsTable } from './HoldingsTable';
-import { ErrorOverlay } from './ErrorOverlay';
+import { ErrorOverlay } from '../../common/ErrorOverlay';
 
 export function ActiveTradesPage() {
   const [isLoading, setIsLoading] = useState(true);

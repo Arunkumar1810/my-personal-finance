@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchGoals, saveGoal } from '../../services/api';
+import { fetchGoals, saveGoal } from '../services/api';
 
 export interface Goal {
   id: string;

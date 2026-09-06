@@ -1,37 +1,36 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AppLayout } from './components/AppLayout';
-import { NetWorthDashboard } from './components/wealth/NetWorthDashboard';
-import { LiabilitiesPage } from './components/wealth/LiabilitiesPage';
-import { GoalsPage } from './components/wealth/GoalsPage';
-import { PortfolioValuation } from './components/PortfolioValuation';
-import { Settings } from './components/Settings';
-import { FallbackProvider } from './components/FallbackContext';
+import { AppLayout } from './common/AppLayout';
+import { FallbackProvider } from './common/FallbackContext';
+import { SettingsPage } from './common/SettingsPage';
 
-import { AssetsLayout } from './components/wealth/AssetsLayout';
-import {
-  AssetsDashboardView,
-  IndianEtfsHoldingsView,
-  IndianEtfsValuationView,
-  IndianLtStocksHoldingsView,
-  IndianLtStocksValuationView,
-  UsStocksHoldingsView,
-  UsStocksValuationView,
-  EsopsVestingView,
-  EsopsGrantsView,
-  FixedDepositsActiveView,
-  FixedDepositsMaturedView,
-  IndianBondsHoldingsView,
-  IndianBondsValuationView,
-  PfAccountLedgerView,
-  PfAccountAnalyticsView,
-  BrokerSyncView,
-} from './components/wealth/AssetClassViews';
+import { NetWorthDashboard } from './wealth-dashboard/NetWorthDashboard';
+import { PortfolioValuation } from './portfolio-valuation/PortfolioValuation';
+import { LiabilitiesPage } from './liabilities/LiabilitiesPage';
+import { GoalsPage } from './goals/GoalsPage';
 
-import { ActiveTradesPage } from './components/ActiveTradesPage';
-import { GttDashboard } from './components/GttDashboard';
-import { WatchlistQueue } from './components/WatchlistQueue';
-import { HistoryPage } from './components/HistoryPage';
-import { DashboardPage } from './components/DashboardPage';
+import { AssetsLayout } from './assets/AssetsLayout';
+import { AssetsDashboardView } from './assets/assets-dashboard/AssetsDashboardView';
+import { IndianEtfsHoldingsView } from './assets/indian-etfs/IndianEtfsHoldingsView';
+import { IndianEtfsValuationView } from './assets/indian-etfs/IndianEtfsValuationView';
+import { IndianLtStocksHoldingsView } from './assets/indian-lt-stocks/IndianLtStocksHoldingsView';
+import { IndianLtStocksValuationView } from './assets/indian-lt-stocks/IndianLtStocksValuationView';
+import { UsStocksHoldingsView } from './assets/us-stocks-etfs/UsStocksHoldingsView';
+import { UsStocksValuationView } from './assets/us-stocks-etfs/UsStocksValuationView';
+import { EsopsVestingView } from './assets/esops-rsus/EsopsVestingView';
+import { EsopsGrantsView } from './assets/esops-rsus/EsopsGrantsView';
+import { FixedDepositsActiveView } from './assets/fixed-deposits/FixedDepositsActiveView';
+import { FixedDepositsMaturedView } from './assets/fixed-deposits/FixedDepositsMaturedView';
+import { IndianBondsHoldingsView } from './assets/indian-bonds/IndianBondsHoldingsView';
+import { IndianBondsValuationView } from './assets/indian-bonds/IndianBondsValuationView';
+import { PfAccountLedgerView } from './assets/pf/PfAccountLedgerView';
+import { PfAccountAnalyticsView } from './assets/pf/PfAccountAnalyticsView';
+
+import { ActiveTradesPage } from './assets/indian-swing-trading/ActiveTradesPage';
+import { GttDashboard } from './assets/indian-swing-trading/GttDashboard';
+import { WatchlistQueue } from './assets/indian-swing-trading/WatchlistQueue';
+import { HistoryPage } from './assets/indian-swing-trading/HistoryPage';
+import { RiskDashboardPage } from './assets/indian-swing-trading/RiskDashboardPage';
+import { BrokerSyncView } from './assets/indian-swing-trading/BrokerSyncView';
 
 import './App.css';
 
@@ -47,8 +46,8 @@ function App() {
             <Route path="valuation" element={<PortfolioValuation />} />
             <Route path="liabilities" element={<LiabilitiesPage />} />
             <Route path="goals" element={<GoalsPage />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="risk-dashboard" element={<DashboardPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="risk-dashboard" element={<RiskDashboardPage />} />
 
             {/* Assets Module with Left Sidebar */}
             <Route path="assets" element={<AssetsLayout />}>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFallback } from './FallbackContext';
+import { useFallback } from '../../common/FallbackContext';
 
 interface TradeModalProps {
   isOpen: boolean;

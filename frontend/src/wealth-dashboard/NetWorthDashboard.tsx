@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { LiquidityRiver } from '../LiquidityRiver';
-import { fetchValuations, fetchLiabilities } from '../../services/api';
+import { LiquidityRiver } from './LiquidityRiver';
+import { fetchValuations, fetchLiabilities } from '../services/api';
 
 export function NetWorthDashboard() {
   const [assetsTotal, setAssetsTotal] = useState<number>(400050);

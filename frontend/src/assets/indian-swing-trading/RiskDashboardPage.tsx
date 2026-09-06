@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { LiquidityRiver } from './LiquidityRiver';
+import { LiquidityRiver } from '../../wealth-dashboard/LiquidityRiver';
 import type { Campaign } from './CampaignJournalModal';
 
-export function DashboardPage() {
+export function RiskDashboardPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [dailyPnl, setDailyPnl] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { TimelineScrubber } from './TimelineScrubber';
-import { ActionInbox } from './ActionInbox';
+import { TimelineScrubber } from '../wealth-dashboard/TimelineScrubber';
+import { ActionInbox } from '../wealth-dashboard/ActionInbox';
 import { OfflineWarningBanner } from './OfflineWarningBanner';
 import { useState } from 'react';
 
